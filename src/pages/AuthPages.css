@@ -1,0 +1,73 @@
+/* ── Auth Pages Shared Styles ── */
+.auth-card {
+  padding: var(--space-7);
+}
+
+.forgot-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.auth-link-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+  margin-bottom: 0;
+}
+
+.auth-link-text a {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Gender pills */
+.gender-pills {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.gender-pill {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.gender-pill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.gender-pill.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+/* Register specific */
+.register-container {
+  max-width: 480px;
+}
+
+.register-container .auth-card {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .register-container .auth-card {
+    max-height: none;
+  }
+}
