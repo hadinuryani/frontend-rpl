@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconSearch, IconPlus, IconX, IconRefresh } from '../../components/Icons';
+import { IconArrowLeft, IconSearch, IconPlus, IconX, IconRefresh, IconClipboard, IconPill } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './BidanPages.css';
@@ -17,6 +17,10 @@ export default function PatientData() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editId, setEditId] = useState(null);
+
+  const [selectedPatientForRM, setSelectedPatientForRM] = useState(null);
+  const [patientRMList, setPatientRMList] = useState([]);
+  const [isLoadingRM, setIsLoadingRM] = useState(false);
 
   const [form, setForm] = useState({
     namaLengkap: '',
@@ -71,6 +75,20 @@ export default function PatientData() {
   const handleCloseDrawer = () => {
     setShowDrawer(false);
     setEditId(null);
+  };
+
+  const handleOpenRM = async (patient) => {
+    setSelectedPatientForRM(patient);
+    setIsLoadingRM(true);
+    setPatientRMList([]);
+    try {
+      const res = await api.get(`/bidan/pasien/${patient.id}/rekam-medis`);
+      setPatientRMList(res.data || []);
+    } catch (err) {
+      console.error("Gagal mengambil riwayat rekam medis:", err);
+    } finally {
+      setIsLoadingRM(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -144,6 +162,7 @@ export default function PatientData() {
                     <td>{p.no_wa || '-'}</td>
                     <td>{new Date(p.created_at).toLocaleDateString('id-ID')}</td>
                     <td style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => handleOpenRM(p)}>Rekam Medis</button>
                       <button className="btn btn-ghost btn-sm" onClick={() => handleOpenDrawer(p)}>Edit</button>
                     </td>
                   </tr>
@@ -157,10 +176,14 @@ export default function PatientData() {
             ) : filtered.length === 0 ? (
               <div style={{textAlign: 'center', padding: '20px'}}>Data tidak ditemukan</div>
             ) : filtered.map(p => (
-              <div className="glass-card" key={p.id} style={{ padding: 'var(--space-4)' }} onClick={() => handleOpenDrawer(p)}>
+              <div className="glass-card" key={p.id} style={{ padding: 'var(--space-4)' }}>
                 <div style={{ fontWeight: 600, color: 'var(--color-dark)', marginBottom: '4px' }}>{p.nama_lengkap}</div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)' }}>{p.umur ? `${p.umur} tahun` : 'Usia belum diatur'} • {p.no_wa || 'No WA belum diatur'}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>Daftar: {new Date(p.created_at).toLocaleDateString('id-ID')}</div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => handleOpenRM(p)}>Rekam Medis</button>
+                  <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => handleOpenDrawer(p)}>Edit</button>
+                </div>
               </div>
             ))}
           </div>
@@ -177,17 +200,22 @@ export default function PatientData() {
               <button className="modal-close" onClick={handleCloseDrawer}><IconX size={16}/></button>
             </div>
             <div className="drawer-body">
+              {editId && (
+                <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: 'var(--color-danger)', fontSize: '0.8125rem', marginBottom: 'var(--space-4)', lineHeight: '1.4' }}>
+                  ⚠️ Data pribadi (Nama, Tgl Lahir, Jenis Kelamin, No. WA) tidak dapat diubah oleh bidan demi keamanan data pasien.
+                </div>
+              )}
               <div className="form-group">
                 <label className="form-label">Nama Lengkap <span style={{color: 'red'}}>*</span></label>
-                <input className="form-input" placeholder="Nama lengkap" value={form.namaLengkap} onChange={e => setForm({...form, namaLengkap: e.target.value})} disabled={isSubmitting} />
+                <input className="form-input" placeholder="Nama lengkap" value={form.namaLengkap} onChange={e => setForm({...form, namaLengkap: e.target.value})} disabled={isSubmitting || !!editId} />
               </div>
               <div className="form-group">
                 <label className="form-label">Tanggal Lahir</label>
-                <input type="date" className="form-input" value={form.tanggalLahir} onChange={e => setForm({...form, tanggalLahir: e.target.value})} disabled={isSubmitting} />
+                <input type="date" className="form-input" value={form.tanggalLahir} onChange={e => setForm({...form, tanggalLahir: e.target.value})} disabled={isSubmitting || !!editId} />
               </div>
               <div className="form-group">
                 <label className="form-label">Jenis Kelamin</label>
-                <select className="form-select" value={form.jenisKelamin} onChange={e => setForm({...form, jenisKelamin: e.target.value})} disabled={isSubmitting}>
+                <select className="form-select" value={form.jenisKelamin} onChange={e => setForm({...form, jenisKelamin: e.target.value})} disabled={isSubmitting || !!editId}>
                   <option value="Perempuan">Perempuan</option>
                   <option value="Laki-laki">Laki-laki</option>
                 </select>
@@ -198,7 +226,7 @@ export default function PatientData() {
               </div>
               <div className="form-group">
                 <label className="form-label">No. WhatsApp</label>
-                <input className="form-input" placeholder="08xxxxxxxxxx" value={form.noWa} onChange={e => setForm({...form, noWa: e.target.value})} disabled={isSubmitting} />
+                <input className="form-input" placeholder="08xxxxxxxxxx" value={form.noWa} onChange={e => setForm({...form, noWa: e.target.value})} disabled={isSubmitting || !!editId} />
               </div>
               <div className="form-group">
                 <label className="form-label">Golongan Darah</label>
@@ -220,6 +248,73 @@ export default function PatientData() {
             </div>
           </div>
         </>
+      )}
+
+      {selectedPatientForRM && (
+        <div className="modal-overlay" onClick={() => setSelectedPatientForRM(null)} style={{ zIndex: 1000 }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px', width: '90%' }}>
+            <div className="modal-header">
+              <h3>Riwayat Rekam Medis — {selectedPatientForRM.nama_lengkap}</h3>
+              <button className="modal-close" onClick={() => setSelectedPatientForRM(null)}><IconX size={16}/></button>
+            </div>
+            <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
+              {isLoadingRM ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>Memuat data rekam medis...</div>
+              ) : patientRMList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  Belum ada riwayat rekam medis untuk pasien ini.
+                </div>
+              ) : (
+                <div className="timeline" style={{ position: 'relative', paddingLeft: '20px' }}>
+                  <div style={{ position: 'absolute', left: '4px', top: '0', bottom: '0', width: '2px', background: 'var(--color-border-light)' }}></div>
+                  {patientRMList.map((rm) => (
+                    <div key={rm.id} style={{ position: 'relative', marginBottom: 'var(--space-5)' }}>
+                      <div style={{ position: 'absolute', left: '-20px', top: '6px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--color-primary)', border: '2px solid white' }}></div>
+                      <div className="glass-card" style={{ padding: 'var(--space-4)', background: 'rgba(255, 255, 255, 0.7)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span className="badge badge-success">{new Date(rm.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Oleh: {rm.nama_bidan || 'Bidan'}</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '6px 12px', fontSize: '0.875rem' }}>
+                          <span style={{ color: 'var(--color-text-light)' }}>Keluhan Utama</span>
+                          <span style={{ fontWeight: 500 }}>{rm.keluhan_utama}</span>
+                          
+                          <span style={{ color: 'var(--color-text-light)' }}>Tekanan Darah</span>
+                          <span style={{ fontWeight: 500 }}>{rm.tekanan_darah ? `${rm.tekanan_darah} mmHg` : '-'}</span>
+                          
+                          <span style={{ color: 'var(--color-text-light)' }}>Berat Badan</span>
+                          <span style={{ fontWeight: 500 }}>{rm.berat_badan ? `${rm.berat_badan} kg` : '-'}</span>
+                          
+                          <span style={{ color: 'var(--color-text-light)' }}>Tinggi Fundus</span>
+                          <span style={{ fontWeight: 500 }}>{rm.tinggi_fundus_uteri ? `${rm.tinggi_fundus_uteri} cm` : '-'}</span>
+                          
+                          <span style={{ color: 'var(--color-text-light)' }}>Kondisi Janin</span>
+                          <span style={{ fontWeight: 500 }}>{rm.kondisi_janin || '-'}</span>
+                          
+                          <span style={{ color: 'var(--color-text-light)' }}>Catatan Tambahan</span>
+                          <span style={{ fontWeight: 500 }}>{rm.catatan_tambahan || '-'}</span>
+                        </div>
+                        {rm.resep && rm.resep.length > 0 && (
+                          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--color-border-light)' }}>
+                            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-dark)', marginBottom: '6px' }}>Resep Obat:</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {rm.resep.map((m, i) => (
+                                <div key={i} style={{ fontSize: '0.8125rem', display: 'flex', justifyContent: 'space-between', background: 'rgba(var(--color-primary-rgb), 0.05)', padding: '6px 10px', borderRadius: '4px' }}>
+                                  <span style={{ fontWeight: 500 }}>{m.nama_obat}</span>
+                                  <span style={{ color: 'var(--color-text-light)' }}>{m.dosis} — {m.aturan_pakai}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

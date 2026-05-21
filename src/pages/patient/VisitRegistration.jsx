@@ -41,11 +41,11 @@ export default function VisitRegistration() {
     setIsSubmitting(true);
     try {
       const res = await api.post('/pasien/antrian', {
-        tanggal_daftar: new Date(date).toISOString(),
+        tanggal_kunjungan: date,
         keluhan: complaint
       });
       
-      setQueueNumber(res.data?.nomor_antrian || 'Menunggu');
+      setQueueNumber(res.data?.no_antrian || 'Menunggu');
       setSubmitted(true);
     } catch (err) {
       alert(err.message || 'Gagal mendaftar antrian. Pastikan jadwal tidak penuh atau coba lagi.');

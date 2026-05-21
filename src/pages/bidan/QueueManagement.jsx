@@ -19,7 +19,8 @@ export default function QueueManagement() {
   const fetchQueue = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/bidan/antrian');
+      const todayISO = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local timezone
+      const res = await api.get(`/bidan/antrian?tanggal=${todayISO}&limit=100`);
       setQueueData(res.data || []);
     } catch (err) {
       console.error("Gagal mengambil data antrian:", err);

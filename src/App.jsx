@@ -10,6 +10,7 @@ import PatientDashboard from './pages/patient/Dashboard';
 import VisitRegistration from './pages/patient/VisitRegistration';
 import MedicalRecords from './pages/patient/MedicalRecords';
 import Notifications from './pages/patient/Notifications';
+import MyQueue from './pages/patient/MyQueue';
 
 import BidanDashboard from './pages/bidan/Dashboard';
 import QueueManagement from './pages/bidan/QueueManagement';
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/patient/visit" element={<VisitRegistration />} />
             <Route path="/patient/records" element={<MedicalRecords />} />
+            <Route path="/patient/queue" element={<MyQueue />} />
             <Route path="/patient/notifications" element={<Notifications />} />
           </Route>
 

@@ -5,7 +5,8 @@ import './Sidebar.css';
 
 const patientMenu = [
   { icon: <IconHome size={20}/>, label: 'Beranda', path: '/patient' },
-  { icon: <IconClipboard size={20}/>, label: 'Daftar Kunjungan', path: '/patient/visit' },
+  { icon: <IconClipboard size={20}/>, label: 'Pendaftaran Layanan', path: '/patient/visit' },
+  { icon: <IconQueue size={20}/>, label: 'Antrian Saya', path: '/patient/queue' },
   { icon: <IconFolder size={20}/>, label: 'Rekam Medis', path: '/patient/records' },
   { icon: <IconPill size={20}/>, label: 'Resep Saya', path: '/patient/records' },
   { icon: <IconBell size={20}/>, label: 'Notifikasi', path: '/patient/notifications' },

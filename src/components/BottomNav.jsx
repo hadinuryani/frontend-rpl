@@ -5,8 +5,8 @@ import './BottomNav.css';
 const patientItems = [
   { icon: <IconHome size={22}/>, label: 'Beranda', path: '/patient' },
   { icon: <IconClipboard size={22}/>, label: 'Kunjungan', path: '/patient/visit' },
+  { icon: <IconQueue size={22}/>, label: 'Antrian', path: '/patient/queue' },
   { icon: <IconFolder size={22}/>, label: 'Rekam Medis', path: '/patient/records' },
-  { icon: <IconBell size={22}/>, label: 'Notifikasi', path: '/patient/notifications' },
 ];
 
 const bidanItems = [
