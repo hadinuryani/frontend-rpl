@@ -27,7 +27,10 @@ export default function ExaminationForm() {
     beratBadan: '',
     tinggiFundus: '',
     kondisiJanin: '',
-    catatanTambahan: ''
+    catatanTambahan: '',
+    perluKontrol: false,
+    tanggalKontrol: '',
+    catatanKontrol: ''
   });
 
   const [medicines, setMedicines] = useState([{ obat_id: '', dose: '', usage: '' }]);
@@ -96,7 +99,10 @@ export default function ExaminationForm() {
           obat_id: parseInt(m.obat_id),
           dosis: m.dose,
           aturan_pakai: m.usage
-        }))
+        })),
+        perlu_kontrol: form.perluKontrol,
+        tanggal_kontrol: form.perluKontrol ? form.tanggalKontrol : undefined,
+        catatan_kontrol: form.perluKontrol ? form.catatanKontrol : undefined
       };
 
       await api.post('/bidan/rekam-medis', payload);
@@ -167,6 +173,48 @@ export default function ExaminationForm() {
                 </div>
                 <div className="form-group"><label className="form-label">Kondisi Janin <span className="form-hint">(Khusus Ibu Hamil)</span></label><textarea className="form-textarea" placeholder="DJJ, posisi, gerakan..." rows="2" value={form.kondisiJanin} onChange={(e) => updateForm('kondisiJanin', e.target.value)} disabled={isSubmitting}></textarea></div>
                 <div className="form-group"><label className="form-label">Catatan Tambahan</label><textarea className="form-textarea" placeholder="Catatan lain..." rows="2" value={form.catatanTambahan} onChange={(e) => updateForm('catatanTambahan', e.target.value)} disabled={isSubmitting}></textarea></div>
+                
+                {/* Penjadwalan Kontrol Kembali */}
+                <div style={{ marginTop: 'var(--space-6)', padding: '16px', background: 'rgba(26, 178, 149, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(26, 178, 149, 0.15)', marginBottom: 'var(--space-5)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: 'var(--color-primary)', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      checked={form.perluKontrol} 
+                      onChange={(e) => updateForm('perluKontrol', e.target.checked)} 
+                      disabled={isSubmitting}
+                    />
+                    Pasien Membutuhkan Kontrol Kembali?
+                  </label>
+                  
+                  {form.perluKontrol && (
+                    <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }} className="stagger-children">
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Tanggal Kontrol Kembali <span style={{color: 'red'}}>*</span></label>
+                        <input 
+                          type="date" 
+                          className="form-input" 
+                          value={form.tanggalKontrol} 
+                          onChange={(e) => updateForm('tanggalKontrol', e.target.value)} 
+                          min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Min tomorrow
+                          required={form.perluKontrol}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Catatan / Keperluan Kontrol</label>
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          placeholder="Contoh: Kontrol Rutin Kehamilan, Imunisasi, dll." 
+                          value={form.catatanKontrol} 
+                          onChange={(e) => updateForm('catatanKontrol', e.target.value)} 
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="exam-section-title" style={{ marginTop: 'var(--space-7)' }}><IconPill size={20}/> Resep Obat <span style={{color: 'red'}}>*</span></div>
                 {medicines.map((m, i) => (

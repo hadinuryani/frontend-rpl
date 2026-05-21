@@ -14,13 +14,13 @@ export default function QueueManagement() {
   const [queueData, setQueueData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const getTodayISO = () => new Date().toLocaleDateString('sv-SE');
+  const [selectedDate, setSelectedDate] = useState(getTodayISO());
 
   const fetchQueue = async () => {
     setIsLoading(true);
     try {
-      const todayISO = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local timezone
-      const res = await api.get(`/bidan/antrian?tanggal=${todayISO}&limit=100`);
+      const res = await api.get(`/bidan/antrian?tanggal=${selectedDate}&limit=100`);
       setQueueData(res.data || []);
     } catch (err) {
       console.error("Gagal mengambil data antrian:", err);
@@ -31,7 +31,7 @@ export default function QueueManagement() {
 
   useEffect(() => {
     fetchQueue();
-  }, []);
+  }, [selectedDate]);
 
   const filtered = filter === 'Semua' ? queueData : queueData.filter(q => q.status.toLowerCase() === filter.toLowerCase());
   const waiting = queueData.filter(q => q.status === 'menunggu').length;
@@ -43,15 +43,29 @@ export default function QueueManagement() {
       <div className="main-content">
         <Navbar variant="bidan" userName={user?.profile?.nama_lengkap || "Bidan Indah"} />
         <div className="page-content">
-          <div className="page-header">
+          <div className="page-header" style={{ flexWrap: 'wrap', gap: '15px' }}>
             <div className="page-title">
               <Link to="/bidan" className="back-btn"><IconArrowLeft size={18}/></Link>
-              <h2>Antrian Pasien — {today}</h2>
+              <h2>Kelola Antrian Pasien</h2>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={fetchQueue}><IconRefresh size={16}/> Refresh</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input 
+                type="date" 
+                className="form-input" 
+                style={{ width: '160px', margin: 0 }} 
+                value={selectedDate} 
+                onChange={e => setSelectedDate(e.target.value)} 
+              />
+              <button className="btn btn-secondary btn-sm" onClick={fetchQueue}><IconRefresh size={16}/> Refresh</button>
+            </div>
           </div>
-          <div className="summary-row">
-            <span>Total: {queueData.length}</span><span>Menunggu: {waiting}</span><span>Selesai/Batal: {done}</span>
+          <div className="summary-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ color: 'var(--color-text-light)', fontWeight: 500 }}>
+              Tanggal: <strong>{new Date(selectedDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+            </div>
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <span>Total: {queueData.length}</span><span>Menunggu: {waiting}</span><span>Selesai/Batal: {done}</span>
+            </div>
           </div>
           <div className="tab-group" style={{ marginBottom: 'var(--space-5)' }}>
             {['Semua', 'Menunggu', 'Selesai'].map(t => (

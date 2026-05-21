@@ -53,19 +53,25 @@ export default function MedicineInventory() {
       const processed = (res.data || []).map(item => {
         let status = 'Stok Aman';
         
-        // Expiry calculation
-        const today = new Date();
-        const expiry = new Date(item.tanggal_kadaluarsa);
-        const daysToExpiry = (expiry - today) / (1000 * 60 * 60 * 24);
-        
-        if (daysToExpiry < 0) {
-          status = 'Kadaluarsa';
-        } else if (daysToExpiry <= 30) {
-          status = 'Hampir Kadaluarsa';
-        } else if (item.jumlah_stok === 0) {
-          status = 'Stok Habis';
-        } else if (item.jumlah_stok <= item.batas_stok_kritis) {
-          status = 'Hampir Habis';
+        // Expiry calculation — only if tanggal_kadaluarsa is not null
+        if (item.tanggal_kadaluarsa) {
+          const today = new Date();
+          const expiry = new Date(item.tanggal_kadaluarsa);
+          const daysToExpiry = (expiry - today) / (1000 * 60 * 60 * 24);
+          
+          if (daysToExpiry < 0) {
+            status = 'Kadaluarsa';
+          } else if (daysToExpiry <= 30) {
+            status = 'Hampir Kadaluarsa';
+          }
+        }
+
+        if (status === 'Stok Aman') {
+          if (item.jumlah_stok === 0) {
+            status = 'Stok Habis';
+          } else if (item.batas_stok_kritis > 0 && item.jumlah_stok <= item.batas_stok_kritis) {
+            status = 'Hampir Habis';
+          }
         }
         
         return { ...item, status };
@@ -198,7 +204,7 @@ export default function MedicineInventory() {
                     <td>{m.kategori}</td>
                     <td style={{ fontWeight: 600, color: m.jumlah_stok === 0 ? 'var(--color-error)' : 'inherit' }}>{m.jumlah_stok}</td>
                     <td>{m.satuan}</td>
-                    <td style={{ color: m.status.includes('Kadaluarsa') ? '#E65100' : 'inherit' }}>{new Date(m.tanggal_kadaluarsa).toLocaleDateString('id-ID')}</td>
+                    <td style={{ color: m.status.includes('Kadaluarsa') ? '#E65100' : 'inherit' }}>{m.tanggal_kadaluarsa ? new Date(m.tanggal_kadaluarsa).toLocaleDateString('id-ID') : '-'}</td>
                     <td><span className={`badge ${statusBadge(m.status)}`}>{m.status}</span></td>
                     <td style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn btn-ghost btn-sm" onClick={() => handleOpenModal(m)}>Edit</button>
@@ -220,7 +226,7 @@ export default function MedicineInventory() {
                   <span className={`badge ${statusBadge(m.status)}`}>{m.status}</span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)' }}>
-                  Stok: {m.jumlah_stok} {m.satuan} • Exp: {new Date(m.tanggal_kadaluarsa).toLocaleDateString('id-ID')}
+                  Stok: {m.jumlah_stok} {m.satuan} • Exp: {m.tanggal_kadaluarsa ? new Date(m.tanggal_kadaluarsa).toLocaleDateString('id-ID') : '-'}
                 </div>
               </div>
             ))}
