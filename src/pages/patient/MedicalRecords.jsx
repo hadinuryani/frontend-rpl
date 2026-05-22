@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconSearch, IconFolder, IconClipboard, IconPill, IconCalendar, IconCheckCircle, IconX } from '../../components/Icons';
+import { IconArrowLeft, IconSearch, IconFolder, IconClipboard, IconPill, IconX } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './PatientPages.css';

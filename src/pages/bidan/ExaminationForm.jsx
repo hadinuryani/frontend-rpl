@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconClipboard, IconPill, IconTrash, IconPlus, IconUser, IconMapPin, IconMessageCircle, IconCheckCircle } from '../../components/Icons';
+import { IconArrowLeft, IconClipboard, IconPill, IconTrash, IconPlus, IconUser, IconMapPin, IconMessageCircle, IconCheckCircle, IconWhatsApp, IconFemale, IconMale } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './BidanPages.css';
@@ -33,7 +33,7 @@ export default function ExaminationForm() {
     catatanKontrol: ''
   });
 
-  const [medicines, setMedicines] = useState([{ obat_id: '', dose: '', usage: '' }]);
+  const [medicines, setMedicines] = useState([{ obat_id: '', jumlah: 1, dose: '', usage: '' }]);
 
   useEffect(() => {
     if (!antrianId) {
@@ -69,7 +69,7 @@ export default function ExaminationForm() {
 
   const updateForm = (field, val) => setForm({ ...form, [field]: val });
 
-  const addMedicine = () => setMedicines([...medicines, { obat_id: '', dose: '', usage: '' }]);
+  const addMedicine = () => setMedicines([...medicines, { obat_id: '', jumlah: 1, dose: '', usage: '' }]);
   const removeMedicine = (i) => setMedicines(medicines.filter((_, idx) => idx !== i));
   const updateMedicine = (i, field, val) => { const m = [...medicines]; m[i][field] = val; setMedicines(m); };
 
@@ -97,12 +97,13 @@ export default function ExaminationForm() {
         catatan_tambahan: form.catatanTambahan || undefined,
         resep: validMedicines.map(m => ({
           obat_id: parseInt(m.obat_id),
+          jumlah: parseInt(m.jumlah) || 1,
           dosis: m.dose,
           aturan_pakai: m.usage
         })),
         perlu_kontrol: form.perluKontrol,
         tanggal_kontrol: form.perluKontrol ? form.tanggalKontrol : undefined,
-        catatan_kontrol: form.perluKontrol ? form.catatanKontrol : undefined
+        catatan_kontrol: form.perluKontrol ? (form.catatanKontrol || undefined) : undefined
       };
 
       await api.post('/bidan/rekam-medis', payload);
@@ -144,17 +145,39 @@ export default function ExaminationForm() {
           </div>
           <div className="split-layout">
             <div className="exam-patient-panel">
-              <div className="glass-card patient-profile-card">
-                <div className="patient-avatar-lg"><IconUser size={40} color="var(--color-primary)"/></div>
-                <h3 style={{ marginBottom: '4px' }}>{antrian?.nama_pasien || 'Nama Pasien'}</h3>
-                <div style={{ fontSize: '0.875rem', color: 'var(--color-text-light)', marginBottom: 'var(--space-4)' }}>
-                  {antrian?.umur ? `${antrian.umur} tahun` : '-'} • Gol. Darah: {antrian?.golongan_darah || '-'}
-                </div>
-                <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', textAlign: 'left' }}>
-                  <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><IconMapPin size={14}/> {antrian?.alamat || '-'}</p>
-                  <p style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '6px' }}><IconMessageCircle size={14}/> {antrian?.no_wa || '-'}</p>
-                </div>
-              </div>
+              {(() => {
+                const isFemale = antrian?.jenis_kelamin === 'perempuan';
+                const isMale = antrian?.jenis_kelamin === 'laki-laki';
+                let avatarBg = 'linear-gradient(135deg, var(--color-primary-light), rgba(64,145,108,0.2))';
+                let avatarColor = 'var(--color-primary)';
+                let AvatarIcon = IconUser;
+
+                if (isFemale) {
+                  avatarBg = 'linear-gradient(135deg, #fbcfe8, rgba(236,72,153,0.2))';
+                  avatarColor = '#ec4899';
+                  AvatarIcon = IconFemale;
+                } else if (isMale) {
+                  avatarBg = 'linear-gradient(135deg, #bfdbfe, rgba(59,130,246,0.2))';
+                  avatarColor = '#3b82f6';
+                  AvatarIcon = IconMale;
+                }
+
+                return (
+                  <div className="glass-card patient-profile-card">
+                    <div className="patient-avatar-lg" style={{ background: avatarBg }}>
+                      <AvatarIcon size={40} color={avatarColor} />
+                    </div>
+                    <h3 style={{ marginBottom: '4px' }}>{antrian?.nama_pasien || 'Nama Pasien'}</h3>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--color-text-light)', marginBottom: 'var(--space-4)' }}>
+                      {antrian?.umur ? `${antrian.umur} tahun` : '-'} • Gol. Darah: {antrian?.golongan_darah || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <p style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}><IconMapPin size={14} color="var(--color-primary)"/> {antrian?.alamat || '-'}</p>
+                      <p style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}><IconWhatsApp size={14} color="#25D366"/> {antrian?.no_wa || '-'}</p>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             <div>
               <div className="glass-card" style={{ padding: 'var(--space-7)' }}>
@@ -201,12 +224,12 @@ export default function ExaminationForm() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label className="form-label">Catatan / Keperluan Kontrol</label>
+                      <div className="form-group" style={{ marginBottom: 0, marginTop: 'var(--space-3)' }}>
+                        <label className="form-label">Catatan / Keperluan Kontrol <span style={{ fontWeight: 400, color: 'var(--color-text-muted)' }}>(opsional)</span></label>
                         <input 
                           type="text" 
                           className="form-input" 
-                          placeholder="Contoh: Kontrol Rutin Kehamilan, Imunisasi, dll." 
+                          placeholder="Contoh: Imunisasi, Kontrol Kehamilan (kosongkan untuk Kontrol Rutin)" 
                           value={form.catatanKontrol} 
                           onChange={(e) => updateForm('catatanKontrol', e.target.value)} 
                           disabled={isSubmitting}
@@ -218,15 +241,31 @@ export default function ExaminationForm() {
                 
                 <div className="exam-section-title" style={{ marginTop: 'var(--space-7)' }}><IconPill size={20}/> Resep Obat <span style={{color: 'red'}}>*</span></div>
                 {medicines.map((m, i) => (
-                  <div className="medicine-form-row" key={i} style={{ borderLeft: '3px solid var(--color-primary)', paddingLeft: 'var(--space-3)', marginBottom: 'var(--space-4)', display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
+                  <div className="medicine-form-row" key={i} style={{ borderLeft: '3px solid var(--color-primary)', paddingLeft: 'var(--space-3)', marginBottom: 'var(--space-4)', display: 'grid', gridTemplateColumns: '1.5fr 0.6fr 1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label" style={{ fontSize: '0.75rem' }}>Obat</label>
                       <select className="form-select" value={m.obat_id} onChange={(e) => updateMedicine(i, 'obat_id', e.target.value)} disabled={isSubmitting}>
                         <option value="">-- Pilih Obat --</option>
-                        {obatList.map(obat => (
-                          <option key={obat.id} value={obat.id}>{obat.nama_obat} ({obat.jumlah_stok} {obat.satuan})</option>
-                        ))}
+                        {obatList.map(obat => {
+                          const isOutOfStock = obat.jumlah_stok <= 0;
+                          const isExpired = obat.tanggal_kadaluarsa && new Date(obat.tanggal_kadaluarsa) < new Date();
+                          let label = `${obat.nama_obat} (${obat.jumlah_stok} ${obat.satuan})`;
+                          if (isExpired) {
+                            label += " — [KADALUARSA]";
+                          } else if (isOutOfStock) {
+                            label += " — [STOK HABIS]";
+                          }
+                          return (
+                            <option key={obat.id} value={obat.id} disabled={isOutOfStock || isExpired}>
+                              {label}
+                            </option>
+                          );
+                        })}
                       </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Jumlah</label>
+                      <input type="number" min="1" className="form-input" placeholder="Qty" value={m.jumlah} onChange={(e) => updateMedicine(i, 'jumlah', e.target.value)} disabled={isSubmitting} />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}><label className="form-label" style={{ fontSize: '0.75rem' }}>Dosis</label><input className="form-input" placeholder="1x1" value={m.dose} onChange={(e) => updateMedicine(i, 'dose', e.target.value)} disabled={isSubmitting} /></div>
                     <div className="form-group" style={{ marginBottom: 0 }}><label className="form-label" style={{ fontSize: '0.75rem' }}>Aturan Pakai</label><input className="form-input" placeholder="Setelah makan" value={m.usage} onChange={(e) => updateMedicine(i, 'usage', e.target.value)} disabled={isSubmitting} /></div>

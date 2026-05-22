@@ -1,9 +1,69 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IconBell } from './Icons';
+import api from '../services/api';
 import './Navbar.css';
 
 export default function Navbar({ variant = 'public', userName = '' }) {
   const location = useLocation();
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    if (variant !== 'patient') return;
+
+    const checkNotifications = async () => {
+      try {
+        const res = await api.get('/pasien/jadwal-kontrol');
+        const jadwals = res.data || [];
+        const readKeys = JSON.parse(localStorage.getItem('read_notif_keys') || '[]');
+
+        // Check welcome notif
+        const welcomeKey = 'welcome-notif';
+        if (!readKeys.includes(welcomeKey)) {
+          setHasUnread(true);
+          return;
+        }
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        for (const j of jadwals) {
+          const tgl = new Date(j.tanggal_kontrol);
+          const diffTime = tgl - today;
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          if (diffDays >= 0 && diffDays <= 3) {
+             const key = `schedule-warning-${j.id}-${j.tanggal_kontrol}`;
+             if (!readKeys.includes(key)) {
+               setHasUnread(true);
+               return;
+             }
+          } else if (diffDays > 3) {
+             const key = `schedule-set-${j.id}-${j.tanggal_kontrol}`;
+             if (!readKeys.includes(key)) {
+               setHasUnread(true);
+               return;
+             }
+          }
+        }
+
+        setHasUnread(false);
+      } catch (err) {
+        console.error("Gagal memeriksa notifikasi:", err);
+      }
+    };
+
+    checkNotifications();
+    
+    const handleStorageChange = () => checkNotifications();
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('notifRead', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('notifRead', handleStorageChange);
+    };
+  }, [variant]);
 
   if (variant === 'public') {
     return (
@@ -27,6 +87,8 @@ export default function Navbar({ variant = 'public', userName = '' }) {
     );
   }
 
+  const targetPath = variant === 'bidan' ? '/bidan/control-schedule' : '/patient/notifications';
+
   return (
     <nav className="navbar navbar-auth" id="dashboard-navbar">
       <div className="navbar-inner">
@@ -40,10 +102,10 @@ export default function Navbar({ variant = 'public', userName = '' }) {
           </span>
         </div>
         <div className="navbar-actions">
-          <button className="navbar-icon-btn" aria-label="Notifikasi" id="navbar-notification-btn">
+          <Link to={targetPath} className="navbar-icon-btn" aria-label="Notifikasi" id="navbar-notification-btn">
             <IconBell size={18} />
-            <span className="notif-dot"></span>
-          </button>
+            {hasUnread && <span className="notif-dot"></span>}
+          </Link>
           <div className="navbar-user">
             <div className="navbar-avatar">{userName?.charAt(0) || 'U'}</div>
             <span className="navbar-username hide-mobile">

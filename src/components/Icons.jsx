@@ -111,3 +111,5 @@ export const IconMinus = (p) => <I {...p}><line x1="5" y1="12" x2="19" y2="12"/>
 export const IconStar = (p) => <I {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></I>;
 
 export const IconActivity = (p) => <I {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></I>;
+
+export const IconKey = (p) => <I {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5l-2.5-2.5"/></I>;

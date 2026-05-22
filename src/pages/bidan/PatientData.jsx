@@ -145,7 +145,6 @@ export default function PatientData() {
               <span className="input-icon"><IconSearch size={18}/></span>
               <input type="text" className="form-input" placeholder="Cari nama atau No. WhatsApp..." value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-            <button className="btn btn-primary hide-mobile" onClick={() => handleOpenDrawer()}><IconPlus size={16}/> Tambah Pasien</button>
           </div>
           <div className="hide-mobile">
             <table className="data-table">
@@ -187,7 +186,6 @@ export default function PatientData() {
               </div>
             ))}
           </div>
-          <button className="fab hide-desktop" onClick={() => handleOpenDrawer()} aria-label="Tambah Pasien"><IconPlus size={24}/></button>
         </div>
       </div>
       <BottomNav variant="bidan" />

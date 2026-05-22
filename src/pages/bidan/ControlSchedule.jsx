@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconMessageCircle, IconCheckCircle, IconRefresh } from '../../components/Icons';
+import { IconArrowLeft, IconMessageCircle, IconCheckCircle, IconRefresh, IconSettings } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './BidanPages.css';
@@ -21,15 +21,26 @@ export default function ControlSchedule() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [waktuPengingat, setWaktuPengingat] = useState('08:00');
+  const [namaKlinik, setNamaKlinik] = useState('Klinik Indah Care Plus (IC+)');
+  const [alamatKlinik, setAlamatKlinik] = useState('Jl. Indah Care No. 45, Jakarta');
+  const [jamKontrol, setJamKontrol] = useState('08:00 - selesai');
+  const [isSavingSetting, setIsSavingSetting] = useState(false);
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [patientsRes, schedulesRes] = await Promise.all([
+      const [patientsRes, schedulesRes, settingRes] = await Promise.all([
         api.get('/bidan/pasien?limit=100'),
-        api.get('/bidan/jadwal-kontrol')
+        api.get('/bidan/jadwal-kontrol'),
+        api.get('/bidan/jadwal-kontrol/waktu-pengingat')
       ]);
       setPatients(patientsRes.data || []);
       setSchedules(schedulesRes.data || []);
+      setWaktuPengingat(settingRes.data?.waktu_pengingat || '08:00');
+      setNamaKlinik(settingRes.data?.nama_klinik || 'Klinik Indah Care Plus (IC+)');
+      setAlamatKlinik(settingRes.data?.alamat_klinik || 'Jl. Indah Care No. 45, Jakarta');
+      setJamKontrol(settingRes.data?.jam_kontrol || '08:00 - selesai');
     } catch (err) {
       console.error("Gagal mengambil data jadwal:", err);
     } finally {
@@ -66,6 +77,24 @@ export default function ControlSchedule() {
       alert(err.message || 'Gagal menyimpan jadwal');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveSetting = async () => {
+    if (!waktuPengingat) return alert("Waktu pengingat wajib diisi");
+    setIsSavingSetting(true);
+    try {
+      await api.put('/bidan/jadwal-kontrol/waktu-pengingat', {
+        waktu_pengingat: waktuPengingat,
+        nama_klinik: namaKlinik,
+        alamat_klinik: alamatKlinik,
+        jam_kontrol: jamKontrol
+      });
+      alert('Pengaturan WhatsApp berhasil diperbarui!');
+    } catch (err) {
+      alert(err.message || 'Gagal menyimpan pengaturan');
+    } finally {
+      setIsSavingSetting(false);
     }
   };
 
@@ -136,6 +165,72 @@ export default function ControlSchedule() {
                   {isSubmitting ? 'Menyimpan...' : 'Simpan Jadwal Kontrol'}
                 </button>
               </div>
+
+              {/* Setting reminder time card */}
+              <div className="glass-card" style={{ padding: 'var(--space-6)', marginTop: 'var(--space-6)' }}>
+                <h4 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 var(--space-4) 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', color: 'var(--color-text)' }}>
+                  <IconSettings size={18} color="var(--color-primary)"/> Pengaturan Pengiriman WA & Info Klinik
+                </h4>
+                
+                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                  <label className="form-label" style={{ fontSize: '0.8125rem' }}>Nama Klinik</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    value={namaKlinik} 
+                    onChange={(e) => setNamaKlinik(e.target.value)} 
+                    disabled={isSavingSetting}
+                    placeholder="Nama Klinik"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                  <label className="form-label" style={{ fontSize: '0.8125rem' }}>Alamat Klinik</label>
+                  <textarea 
+                    className="form-textarea" 
+                    value={alamatKlinik} 
+                    onChange={(e) => setAlamatKlinik(e.target.value)} 
+                    disabled={isSavingSetting}
+                    placeholder="Alamat Klinik"
+                    rows="2"
+                  ></textarea>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                  <label className="form-label" style={{ fontSize: '0.8125rem' }}>Jam Layanan Kontrol (Default)</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    value={jamKontrol} 
+                    onChange={(e) => setJamKontrol(e.target.value)} 
+                    disabled={isSavingSetting}
+                    placeholder="Contoh: 08:00 - selesai"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
+                  <label className="form-label" style={{ fontSize: '0.8125rem' }}>Jam Pengiriman Notifikasi (H-1)</label>
+                  <input 
+                    type="time" 
+                    className="form-input" 
+                    value={waktuPengingat} 
+                    onChange={(e) => setWaktuPengingat(e.target.value)} 
+                    disabled={isSavingSetting}
+                    style={{ maxWidth: '140px' }}
+                  />
+                </div>
+
+                <button 
+                  className="btn btn-primary btn-full" 
+                  onClick={handleSaveSetting} 
+                  disabled={isSavingSetting}
+                >
+                  {isSavingSetting ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 'var(--space-3) 0 0 0', lineHeight: 1.4 }}>
+                  Pasien akan mendapat notifikasi WhatsApp pada jam yang ditentukan satu hari sebelum tanggal kontrol mereka dengan template pesan yang telah disesuaikan.
+                </p>
+              </div>
             </div>
             <div>
               <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: 'var(--space-5)' }}>Jadwal Kontrol Terdaftar</h3>
@@ -158,8 +253,14 @@ export default function ControlSchedule() {
                         <td style={{ padding: '12px 16px' }}>{new Date(s.tanggal_kontrol).toLocaleDateString('id-ID')}</td>
                         <td style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontStyle: s.catatan ? 'normal' : 'italic' }}>{s.catatan || '-'}</td>
                         <td style={{ padding: '12px 16px' }}>
-                          <span className={`badge ${s.status_notifikasi === 'Terkirim' ? 'badge-success' : 'badge-gray'}`}>
-                            {s.status_notifikasi === 'Terkirim' ? <><IconCheckCircle size={12}/> WA Terkirim</> : s.status_notifikasi}
+                          <span className={`badge ${s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'badge-success' : s.status_notifikasi?.toLowerCase() === 'gagal' ? 'badge-danger' : 'badge-gray'}`}>
+                            {s.status_notifikasi?.toLowerCase() === 'terkirim' ? (
+                              <><IconCheckCircle size={12}/> WA Terkirim</>
+                            ) : s.status_notifikasi?.toLowerCase() === 'gagal' ? (
+                              'Gagal Kirim'
+                            ) : (
+                              s.status_notifikasi || 'Menunggu'
+                            )}
                           </span>
                         </td>
                       </tr>
