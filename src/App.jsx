@@ -8,6 +8,7 @@ import './App.css';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PatientDashboard = lazy(() => import('./pages/patient/Dashboard'));
 const VisitRegistration = lazy(() => import('./pages/patient/VisitRegistration'));
@@ -100,7 +101,7 @@ export default function App() {
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
