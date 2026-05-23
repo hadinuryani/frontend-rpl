@@ -102,10 +102,12 @@ export default function Navbar({ variant = 'public', userName = '' }) {
           </span>
         </div>
         <div className="navbar-actions">
-          <Link to={targetPath} className="navbar-icon-btn" aria-label="Notifikasi" id="navbar-notification-btn">
-            <IconBell size={18} />
-            {hasUnread && <span className="notif-dot"></span>}
-          </Link>
+          {variant === 'patient' && (
+            <Link to={targetPath} className="navbar-icon-btn" aria-label="Notifikasi" id="navbar-notification-btn">
+              <IconBell size={18} />
+              {hasUnread && <span className="notif-dot"></span>}
+            </Link>
+          )}
           <div className="navbar-user">
             <div className="navbar-avatar">{userName?.charAt(0) || 'U'}</div>
             <span className="navbar-username hide-mobile">

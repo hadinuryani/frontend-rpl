@@ -25,7 +25,7 @@ export default function PatientData() {
   const [form, setForm] = useState({
     namaLengkap: '',
     tanggalLahir: '',
-    jenisKelamin: 'Perempuan',
+    jenisKelamin: 'perempuan',
     alamat: '',
     noWa: '',
     golonganDarah: ''
@@ -53,7 +53,7 @@ export default function PatientData() {
       setForm({
         namaLengkap: patient.nama_lengkap || '',
         tanggalLahir: patient.tanggal_lahir ? new Date(patient.tanggal_lahir).toISOString().split('T')[0] : '',
-        jenisKelamin: patient.jenis_kelamin || 'Perempuan',
+        jenisKelamin: patient.jenis_kelamin || 'perempuan',
         alamat: patient.alamat || '',
         noWa: patient.no_wa || '',
         golonganDarah: patient.golongan_darah || ''
@@ -63,7 +63,7 @@ export default function PatientData() {
       setForm({
         namaLengkap: '',
         tanggalLahir: '',
-        jenisKelamin: 'Perempuan',
+        jenisKelamin: 'perempuan',
         alamat: '',
         noWa: '',
         golonganDarah: ''
@@ -214,8 +214,8 @@ export default function PatientData() {
               <div className="form-group">
                 <label className="form-label">Jenis Kelamin</label>
                 <select className="form-select" value={form.jenisKelamin} onChange={e => setForm({...form, jenisKelamin: e.target.value})} disabled={isSubmitting || !!editId}>
-                  <option value="Perempuan">Perempuan</option>
-                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="perempuan">Perempuan</option>
+                  <option value="laki-laki">Laki-laki</option>
                 </select>
               </div>
               <div className="form-group">

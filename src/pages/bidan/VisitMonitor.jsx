@@ -93,7 +93,7 @@ export default function VisitMonitor() {
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>Data kunjungan tidak ditemukan</td></tr>
                 ) : filtered.map(v => (
-                  <tr key={v.antrian_id}>
+                  <tr key={v.id}>
                     <td>{new Date(v.tanggal_daftar).toLocaleDateString('id-ID')}</td>
                     <td style={{ fontWeight: 500 }}>{v.nama_pasien}</td>
                     <td>{v.keluhan || '-'}</td>
@@ -110,7 +110,7 @@ export default function VisitMonitor() {
             ) : filtered.length === 0 ? (
               <div style={{textAlign: 'center', padding: '20px'}}>Data tidak ditemukan</div>
             ) : filtered.map(v => (
-              <div className="glass-card" key={v.antrian_id} style={{ padding: 'var(--space-4)' }}>
+              <div className="glass-card" key={v.id} style={{ padding: 'var(--space-4)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <strong>{v.nama_pasien}</strong>
                   <span className={`badge ${v.status === 'selesai' ? 'badge-success' : 'badge-warning'}`} style={{ textTransform: 'capitalize' }}>{v.status}</span>

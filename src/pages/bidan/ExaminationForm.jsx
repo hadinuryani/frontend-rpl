@@ -19,6 +19,7 @@ export default function ExaminationForm() {
   const [obatList, setObatList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClinicOpen, setIsClinicOpen] = useState(true);
 
   const [form, setForm] = useState({
     keluhanUtama: '',
@@ -44,13 +45,15 @@ export default function ExaminationForm() {
 
     const fetchData = async () => {
       try {
-        const [antrianRes, obatRes] = await Promise.all([
+        const [antrianRes, obatRes, statusRes] = await Promise.all([
           api.get(`/bidan/antrian/${antrianId}`),
-          api.get('/bidan/obat?limit=100') // Get all medicines for dropdown
+          api.get('/bidan/obat?limit=100'), // Get all medicines for dropdown
+          api.get('/klinik/status')
         ]);
         
         setAntrian(antrianRes.data);
         setObatList(obatRes.data || []);
+        setIsClinicOpen(statusRes.data.status === 'buka');
         
         // Auto-fill keluhan utama from antrian if available
         if (antrianRes.data && antrianRes.data.keluhan) {
@@ -74,6 +77,11 @@ export default function ExaminationForm() {
   const updateMedicine = (i, field, val) => { const m = [...medicines]; m[i][field] = val; setMedicines(m); };
 
   const handleSubmit = async () => {
+    if (!isClinicOpen) {
+      alert('Klinik sedang tutup. Tidak dapat menyimpan rekam medis saat klinik tutup.');
+      return;
+    }
+
     if (!form.keluhanUtama) {
       alert('Keluhan utama wajib diisi');
       return;

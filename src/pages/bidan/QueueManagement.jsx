@@ -13,6 +13,7 @@ export default function QueueManagement() {
   const [filter, setFilter] = useState('Semua');
   const [queueData, setQueueData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClinicOpen, setIsClinicOpen] = useState(true);
   
   const getTodayISO = () => new Date().toLocaleDateString('sv-SE');
   const [selectedDate, setSelectedDate] = useState(getTodayISO());
@@ -20,8 +21,12 @@ export default function QueueManagement() {
   const fetchQueue = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get(`/bidan/antrian?tanggal=${selectedDate}&limit=100`);
-      setQueueData(res.data || []);
+      const [queueRes, statusRes] = await Promise.all([
+        api.get(`/bidan/antrian?tanggal=${selectedDate}&limit=100`),
+        api.get('/klinik/status')
+      ]);
+      setQueueData(queueRes.data || []);
+      setIsClinicOpen(statusRes.data.status === 'buka');
     } catch (err) {
       console.error("Gagal mengambil data antrian:", err);
     } finally {
@@ -95,7 +100,17 @@ export default function QueueManagement() {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                     <span className={`badge ${q.status === 'menunggu' ? 'badge-waiting' : (q.status === 'dibatalkan' ? 'badge-error' : 'badge-success')}`} style={{ textTransform: 'capitalize' }}>{q.status}</span>
                     {q.status === 'menunggu' ? (
-                      <Link to={`/bidan/examine?antrian_id=${q.id}`} className="btn btn-secondary btn-sm">Periksa Sekarang →</Link>
+                      isClinicOpen ? (
+                        <Link to={`/bidan/examine?antrian_id=${q.id}`} className="btn btn-secondary btn-sm">Periksa Sekarang →</Link>
+                      ) : (
+                        <button 
+                          className="btn btn-secondary btn-sm" 
+                          style={{ opacity: 0.6, cursor: 'not-allowed' }} 
+                          onClick={() => alert('Klinik sedang tutup. Silakan buka status klinik di Dashboard terlebih dahulu.')}
+                        >
+                          Periksa Sekarang →
+                        </button>
+                      )
                     ) : (
                       <span style={{ color: 'var(--color-success)' }}><IconCheck size={24}/></span>
                     )}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconUser, IconClock, IconCheckCircle, IconAlertTriangle, IconQueue, IconCalendar, IconChart, IconUsers, IconPackage, IconTrendingUp, IconArrowRight } from '../../components/Icons';
+import { IconUser, IconClock, IconCheckCircle, IconAlertTriangle, IconQueue, IconCalendar, IconChart, IconUsers, IconPackage, IconTrendingUp, IconArrowRight, IconSettings, IconShield } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './BidanPages.css';
@@ -14,18 +14,22 @@ const quickNav = [
   { icon: <IconChart size={24}/>, title: 'Monitor Kunjungan', desc: 'Pantau data kunjungan pasien', path: '/bidan/monitor' },
   { icon: <IconUsers size={24}/>, title: 'Data Pasien', desc: 'Kelola data pasien terdaftar', path: '/bidan/patients' },
   { icon: <IconPackage size={24}/>, title: 'Inventori Obat', desc: 'Manajemen stok obat klinik', path: '/bidan/inventory' },
-  { icon: <IconTrendingUp size={24}/>, title: 'Laporan', desc: 'Laporan klinik keseluruhan', path: '/bidan' },
+  { icon: <IconTrendingUp size={24}/>, title: 'Laporan', desc: 'Laporan klinik keseluruhan', path: '/bidan/monitor' },
 ];
 
 export default function BidanDashboard() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+
   const [isOpen, setIsOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState('');
   const [stats, setStats] = useState({
     total_pasien_hari_ini: 0,
     antrian_menunggu: 0,
     antrian_selesai: 0,
-    stok_obat_kritis: 0
+    stok_obat_kritis: 0,
+    total_pasien_terdaftar: 0
   });
 
   const fetchDashboardData = async () => {
@@ -60,10 +64,11 @@ export default function BidanDashboard() {
   };
 
   const statCards = [
-    { icon: <IconUser size={24}/>, value: stats.total_pasien_hari_ini, label: 'Total Pasien Hari Ini', color: 'var(--color-primary-light)', textColor: null },
+    { icon: <IconUser size={24}/>, value: stats.total_pasien_hari_ini, label: 'Pasien Hari Ini', color: 'var(--color-primary-light)', textColor: null },
     { icon: <IconClock size={24}/>, value: stats.antrian_menunggu, label: 'Antrian Menunggu', color: 'rgba(233,196,106,0.15)', textColor: null },
     { icon: <IconCheckCircle size={24}/>, value: stats.antrian_selesai, label: 'Antrian Selesai', color: 'var(--color-primary-light)', textColor: null },
     { icon: <IconAlertTriangle size={24}/>, value: stats.stok_obat_kritis, label: 'Stok Obat Kritis', color: 'rgba(224,92,92,0.1)', textColor: 'var(--color-error)' },
+    { icon: <IconUsers size={24}/>, value: stats.total_pasien_terdaftar, label: 'Total Pasien Terdaftar', color: 'rgba(26,178,149,0.15)', textColor: null },
   ];
 
   return (
@@ -72,48 +77,91 @@ export default function BidanDashboard() {
       <div className="main-content">
         <Navbar variant="bidan" userName={user?.profile?.nama_lengkap || 'Bidan Indah'} />
         <div className="page-content">
-          <div className={`clinic-toggle-card ${isOpen ? 'is-open' : 'is-closed'} animate-fade-in`}>
-            <div className="toggle-info">
-              <h3>Status Klinik Hari Ini</h3>
-              <div className="toggle-time">{new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
-            </div>
-            <div className="toggle-center">
-              <span className="toggle-label">{isOpen ? 'BUKA' : 'TUTUP'}</span>
-              <label className="toggle-switch toggle-lg">
-                <input type="checkbox" checked={isOpen} onChange={toggleClinicStatus} id="clinic-toggle" />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div className="toggle-status-text">Klinik Sedang {isOpen ? 'BUKA' : 'TUTUP'}</div>
-              <div className="toggle-updated">Diperbarui {lastUpdated || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
-            </div>
-          </div>
-
-          <div className="grid-4 stagger-children" style={{ marginBottom: 'var(--space-7)' }}>
-            {statCards.map((s, i) => (
-              <div className="stat-card" key={i} style={{ position: 'relative' }}>
-                <div className="stat-icon" style={{ background: s.color }}>{s.icon}</div>
-                <div className="stat-value" style={s.textColor ? { color: s.textColor } : {}}>{s.value}</div>
-                <div className="stat-label">{s.label}</div>
-                {i === 3 && s.value > 0 && <span className="pulse-dot red" style={{ position: 'absolute', top: '16px', right: '16px' }}></span>}
-              </div>
-            ))}
-          </div>
-
-          <div className="section-title"><h3>Menu Cepat</h3></div>
-          <div className="grid-2x3 stagger-children">
-            {quickNav.map((n, i) => (
-              <Link to={n.path} className="action-card" key={i} style={{ textAlign: 'left', flexDirection: 'row', justifyContent: 'flex-start' }}>
-                <div className="action-icon"><span>{n.icon}</span></div>
-                <div>
-                  <div className="action-title">{n.title}</div>
-                  <div className="action-desc">{n.desc}</div>
+          {activeTab === 'profile' ? (
+            <div className="glass-card animate-fade-in" style={{ padding: 'var(--space-6)', maxWidth: '600px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 'var(--space-6)', borderBottom: '1px solid var(--color-border-light)', paddingBottom: 'var(--space-4)' }}>
+                <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '10px', borderRadius: '50%', display: 'flex' }}>
+                  <IconUser size={24}/>
                 </div>
-                <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)' }}><IconArrowRight size={20}/></span>
-              </Link>
-            ))}
-          </div>
+                <div>
+                  <h3 style={{ margin: 0, color: 'var(--color-dark)' }}>Profil Saya</h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8125rem', color: 'var(--color-text-light)' }}>Informasi akun dan profil bidan klinik</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(26,178,149,0.03)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(26,178,149,0.06)' }}>
+                  <div style={{ background: 'var(--color-primary)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 700 }}>
+                    {user?.profile?.nama_lengkap ? user.profile.nama_lengkap.substring(0, 1).toUpperCase() : 'B'}
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.125rem', color: 'var(--color-dark)' }}>{user?.profile?.nama_lengkap || 'Bidan Klinik'}</h4>
+                    <span className="badge badge-success" style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <IconShield size={12}/> Bidan Utama
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '16px', fontSize: '0.9375rem', padding: '0 8px' }}>
+                  <span style={{ color: 'var(--color-text-light)' }}>Email Login</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-dark)' }}>{user?.email || 'bidan@ic-plus.com'}</span>
+                  
+                  <span style={{ color: 'var(--color-text-light)' }}>Nama Lengkap</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-dark)' }}>{user?.profile?.nama_lengkap || 'Bidan Klinik'}</span>
+
+                  <span style={{ color: 'var(--color-text-light)' }}>Nomor WhatsApp</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-dark)' }}>{user?.profile?.no_wa || '08123456789'}</span>
+
+                  <span style={{ color: 'var(--color-text-light)' }}>Alamat</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-dark)' }}>{user?.profile?.alamat || 'Klinik Bersalin IC+'}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className={`clinic-toggle-card ${isOpen ? 'is-open' : 'is-closed'} animate-fade-in`}>
+                <div className="toggle-info">
+                  <h3>Status Klinik Hari Ini</h3>
+                  <div className="toggle-time">{new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div className="toggle-center">
+                  <span className="toggle-label">{isOpen ? 'BUKA' : 'TUTUP'}</span>
+                  <label className="toggle-switch toggle-lg">
+                    <input type="checkbox" checked={isOpen} onChange={toggleClinicStatus} id="clinic-toggle" />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="toggle-status-text">Klinik Sedang {isOpen ? 'BUKA' : 'TUTUP'}</div>
+                  <div className="toggle-updated">Diperbarui {lastUpdated || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              </div>
+
+              <div className="stagger-children" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-5)', marginBottom: 'var(--space-7)' }}>
+                {statCards.map((s, i) => (
+                  <div className="stat-card" key={i} style={{ position: 'relative' }}>
+                    <div className="stat-icon" style={{ background: s.color }}>{s.icon}</div>
+                    <div className="stat-value" style={s.textColor ? { color: s.textColor } : {}}>{s.value}</div>
+                    <div className="stat-label">{s.label}</div>
+                    {i === 3 && s.value > 0 && <span className="pulse-dot red" style={{ position: 'absolute', top: '16px', right: '16px' }}></span>}
+                  </div>
+                ))}
+              </div>
+
+              <div className="section-title"><h3>Menu Cepat</h3></div>
+              <div className="grid-2x3 stagger-children">
+                {quickNav.map((n, i) => (
+                  <Link to={n.path} className="action-card" key={i} style={{ textAlign: 'left', flexDirection: 'row', justifyContent: 'flex-start' }}>
+                    <div className="action-icon"><span>{n.icon}</span></div>
+                    <div>
+                      <div className="action-title">{n.title}</div>
+                      <div className="action-desc">{n.desc}</div>
+                    </div>
+                    <span style={{ marginLeft: 'auto', color: 'var(--color-text-muted)' }}><IconArrowRight size={20}/></span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
       <BottomNav variant="bidan" />

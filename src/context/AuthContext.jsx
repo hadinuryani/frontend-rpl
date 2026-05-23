@@ -14,7 +14,10 @@ export function AuthProvider({ children }) {
   // Listen for unauthorized events from api.js to auto-logout
   useEffect(() => {
     const handleUnauthorized = () => {
-      logout();
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('ic_plus_token');
+      localStorage.removeItem('ic_plus_user');
     };
     window.addEventListener('auth-unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth-unauthorized', handleUnauthorized);
@@ -58,15 +61,25 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    try {
-      if (token) await api.post('/auth/logout');
-    } catch (e) {
-      // Ignore if logout fails on server
-    } finally {
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem('ic_plus_token');
-      localStorage.removeItem('ic_plus_user');
+    const currentToken = token;
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('ic_plus_token');
+    localStorage.removeItem('ic_plus_user');
+
+    if (currentToken) {
+      try {
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (e) {
+        // Ignore if logout fails on server
+      }
     }
   };
 

@@ -75,7 +75,7 @@ export default function LoginPage() {
     e.preventDefault();
     const newErrors = {};
     if (!otpCode || otpCode.length !== 6) newErrors.otp = 'Kode OTP harus 6 digit';
-    if (!newPassword || newPassword.length < 6) newErrors.newPassword = 'Password minimal 6 karakter';
+    if (!newPassword || newPassword.length < 8) newErrors.newPassword = 'Password minimal 8 karakter';
     
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -287,7 +287,7 @@ export default function LoginPage() {
                     type={showNewPassword ? 'text' : 'password'}
                     id="reset-new-password"
                     className={`form-input ${errors.newPassword ? 'error' : ''}`}
-                    placeholder="Password baru minimal 6 karakter"
+                    placeholder="Password baru minimal 8 karakter"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     disabled={isSubmitting}

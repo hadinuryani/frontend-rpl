@@ -136,7 +136,7 @@ export default function LandingPage() {
             <p><IconClock size={14} style={{display:'inline',verticalAlign:'middle',marginRight:'6px'}}/> Senin - Sabtu, 08:00 - 17:00 WIB</p>
           </div>
           <div className="footer-contact">
-            <a href="https://wa.me/6281234567890" className="btn btn-sm whatsapp-btn" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/6285556050556" className="btn btn-sm whatsapp-btn" target="_blank" rel="noopener noreferrer">
               <IconWhatsApp size={16}/> Hubungi via WhatsApp
             </a>
           </div>
