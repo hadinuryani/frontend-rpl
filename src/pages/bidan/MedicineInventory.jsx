@@ -220,7 +220,12 @@ export default function MedicineInventory() {
             ) : filtered.length === 0 ? (
               <div style={{textAlign: 'center', padding: '20px'}}>Data tidak ditemukan</div>
             ) : filtered.map(m => (
-              <div className="glass-card" key={m.id} style={{ padding: 'var(--space-4)', opacity: m.status === 'Kadaluarsa' ? 0.5 : 1 }}>
+              <div 
+                className="glass-card" 
+                key={m.id} 
+                style={{ padding: 'var(--space-4)', opacity: m.status === 'Kadaluarsa' ? 0.5 : 1, cursor: 'pointer' }}
+                onClick={() => handleOpenModal(m)}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <strong>{m.nama_obat}</strong>
                   <span className={`badge ${statusBadge(m.status)}`}>{m.status}</span>

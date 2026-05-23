@@ -234,39 +234,65 @@ export default function ControlSchedule() {
             </div>
             <div>
               <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: 'var(--space-5)' }}>Jadwal Kontrol Terdaftar</h3>
-              <div className="data-table" style={{ fontSize: '0.875rem' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr>
-                    <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Nama Pasien</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Tanggal</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Catatan</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Notifikasi</th>
-                  </tr></thead>
-                  <tbody>
-                    {isLoading ? (
-                      <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Memuat data...</td></tr>
-                    ) : schedules.length === 0 ? (
-                      <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Belum ada jadwal kontrol terdaftar</td></tr>
-                    ) : schedules.map((s) => (
-                      <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>{s.nama_pasien}</td>
-                        <td style={{ padding: '12px 16px' }}>{new Date(s.tanggal_kontrol).toLocaleDateString('id-ID')}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontStyle: s.catatan ? 'normal' : 'italic' }}>{s.catatan || '-'}</td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span className={`badge ${s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'badge-success' : s.status_notifikasi?.toLowerCase() === 'gagal' ? 'badge-danger' : 'badge-gray'}`}>
-                            {s.status_notifikasi?.toLowerCase() === 'terkirim' ? (
-                              <><IconCheckCircle size={12}/> WA Terkirim</>
-                            ) : s.status_notifikasi?.toLowerCase() === 'gagal' ? (
-                              'Gagal Kirim'
-                            ) : (
-                              s.status_notifikasi || 'Menunggu'
-                            )}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="hide-mobile">
+                <div className="data-table" style={{ fontSize: '0.875rem' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead><tr>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Nama Pasien</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Tanggal</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Catatan</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', background: 'var(--color-primary-light)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary-dark)', textTransform: 'uppercase' }}>Notifikasi</th>
+                    </tr></thead>
+                    <tbody>
+                      {isLoading ? (
+                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Memuat data...</td></tr>
+                      ) : schedules.length === 0 ? (
+                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Belum ada jadwal kontrol terdaftar</td></tr>
+                      ) : schedules.map((s) => (
+                        <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+                          <td style={{ padding: '12px 16px', fontWeight: 500 }}>{s.nama_pasien}</td>
+                          <td style={{ padding: '12px 16px' }}>{new Date(s.tanggal_kontrol).toLocaleDateString('id-ID')}</td>
+                          <td style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontStyle: s.catatan ? 'normal' : 'italic' }}>{s.catatan || '-'}</td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span className={`badge ${s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'badge-success' : s.status_notifikasi?.toLowerCase() === 'gagal' ? 'badge-danger' : 'badge-gray'}`}>
+                              {s.status_notifikasi?.toLowerCase() === 'terkirim' ? (
+                                <><IconCheckCircle size={12}/> WA Terkirim</>
+                              ) : s.status_notifikasi?.toLowerCase() === 'gagal' ? (
+                                'Gagal Kirim'
+                              ) : (
+                                s.status_notifikasi || 'Menunggu'
+                              )}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="hide-desktop" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {isLoading ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)' }}>Memuat data...</div>
+                ) : schedules.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)' }}>Belum ada jadwal kontrol terdaftar</div>
+                ) : schedules.map((s) => (
+                  <div className="glass-card" key={s.id} style={{ padding: 'var(--space-4)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+                      <strong>{s.nama_pasien}</strong>
+                      <span className={`badge ${s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'badge-success' : s.status_notifikasi?.toLowerCase() === 'gagal' ? 'badge-danger' : 'badge-gray'}`} style={{ fontSize: '0.7rem' }}>
+                        {s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'WA Terkirim' : s.status_notifikasi || 'Menunggu'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)', marginBottom: '4px' }}>
+                      Jadwal: {new Date(s.tanggal_kontrol).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                    {s.catatan && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontStyle: 'italic', background: 'rgba(0,0,0,0.02)', padding: '6px 8px', borderRadius: '4px', marginTop: '4px' }}>
+                        Catatan: {s.catatan}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

@@ -116,6 +116,12 @@ export default function VisitMonitor() {
                   <span className={`badge ${v.status === 'selesai' ? 'badge-success' : 'badge-warning'}`} style={{ textTransform: 'capitalize' }}>{v.status}</span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)' }}>{new Date(v.tanggal_daftar).toLocaleDateString('id-ID')} — {v.keluhan || '-'}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', borderTop: '1px solid var(--color-border-light)', paddingTop: '6px', fontSize: '0.75rem' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Rekam Medis:</span>
+                  <span style={{ fontWeight: 600, color: v.rekam_medis_id ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                    {v.rekam_medis_id ? 'Tersedia' : 'Belum Ada'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
