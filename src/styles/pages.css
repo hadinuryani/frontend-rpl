@@ -8,16 +8,92 @@
   min-height: 100vh;
 }
 
+.sidebar {
+  transition: transform var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1),
+              width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1),
+              padding var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-logo {
+  transition: padding var(--transition-slow) ease, justify-content var(--transition-slow) ease;
+}
+
+.sidebar-logo .logo-plus {
+  transition: opacity var(--transition-fast) ease;
+}
+
+.sidebar-item {
+  transition: padding var(--transition-slow) ease, gap var(--transition-slow) ease, justify-content var(--transition-slow) ease;
+}
+
+.sidebar-label {
+  transition: opacity var(--transition-fast) ease, width var(--transition-fast) ease, margin var(--transition-fast) ease;
+  opacity: 1;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.navbar-auth {
+  transition: left var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .app-layout .main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
   padding-top: var(--navbar-height);
   min-height: 100vh;
+  transition: margin-left var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-layout .page-content {
   padding: var(--space-7);
   max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  transition: max-width var(--transition-slow) ease;
+}
+
+/* Collapsed sidebar state - keeps icons visible */
+body.sidebar-collapsed .sidebar {
+  width: var(--sidebar-collapsed-width);
+  padding: var(--space-6) var(--space-2);
+}
+
+body.sidebar-collapsed .sidebar-logo {
+  justify-content: center;
+  padding: 0;
+}
+
+body.sidebar-collapsed .sidebar-logo .logo-plus {
+  opacity: 0;
+  display: none;
+}
+
+body.sidebar-collapsed .sidebar-label {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+}
+
+body.sidebar-collapsed .sidebar-item {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+}
+
+body.sidebar-collapsed .navbar-auth {
+  left: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .app-layout .main-content {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .app-layout .page-content {
+  max-width: 1400px; /* Lebar content lebih lebar */
 }
 
 @media (max-width: 768px) {

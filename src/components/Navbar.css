@@ -151,3 +151,87 @@
   font-weight: 500;
   color: var(--color-dark);
 }
+
+.navbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.hamburger-check-input {
+  display: none;
+}
+
+.sidebar-hamburger-btn {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 22px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.sidebar-hamburger-btn div {
+  width: 30px;
+  height: 4px;
+  background-color: var(--color-primary);
+  border-radius: 3px;
+  position: absolute;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger-line-1 {
+  top: 0;
+}
+
+.hamburger-line-2 {
+  top: calc(38%); /* 8px */
+}
+
+.hamburger-line-3 {
+  top: calc(76%); /* 16px */
+}
+
+/* Hover effect: make lines shorter and form arrow */
+.sidebar-hamburger-btn:hover div {
+  width: 55%; /* ~16px */
+}
+
+.sidebar-hamburger-btn:hover .hamburger-line-1 {
+  transform: translate(13.5px, 5px) rotate(35deg);
+  border-radius: 7px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.sidebar-hamburger-btn:hover .hamburger-line-3 {
+  transform: translate(13.5px, -5px) rotate(-35deg);
+  border-radius: 7px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.hamburger-check-input:checked + .sidebar-hamburger-btn:hover .hamburger-line-1 {
+  transform: translate(0, 5px) rotate(-35deg);
+  border-radius: 7px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.hamburger-check-input:checked + .sidebar-hamburger-btn:hover .hamburger-line-3 {
+  transform: translate(0, -5px) rotate(35deg);
+  border-radius: 7px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.hamburger-check-input:checked + .sidebar-hamburger-btn:hover .hamburger-line-2 {
+  margin-left: 13.5px;
+}
+
+@media (min-width: 769px) {
+  .navbar-auth .navbar-logo {
+    display: none !important;
+  }
+}
+

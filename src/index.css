@@ -71,6 +71,7 @@
 
   /* Layout */
   --sidebar-width: 260px;
+  --sidebar-collapsed-width: 76px;
   --navbar-height: 72px;
   --bottom-nav-height: 72px;
   --container-max: 1200px;

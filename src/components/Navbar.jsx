@@ -1,12 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { IconBell } from './Icons';
+import { IconBell, IconMenuFold, IconMenuUnfold } from './Icons';
 import api from '../services/api';
 import './Navbar.css';
 
 export default function Navbar({ variant = 'public', userName = '' }) {
   const location = useLocation();
   const [hasUnread, setHasUnread] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar-collapsed') === 'true';
+  });
+
+  useEffect(() => {
+    if (variant === 'public') return;
+    if (isSidebarCollapsed) {
+      document.body.classList.add('sidebar-collapsed');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+    }
+  }, [isSidebarCollapsed, variant]);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
+
 
   useEffect(() => {
     if (variant !== 'patient') return;
@@ -92,10 +113,26 @@ export default function Navbar({ variant = 'public', userName = '' }) {
   return (
     <nav className="navbar navbar-auth" id="dashboard-navbar">
       <div className="navbar-inner">
-        <Link to="/" className="navbar-logo">
-          <span className="logo-ic">IC</span>
-          <span className="logo-plus">+</span>
-        </Link>
+        <div className="navbar-left-group">
+          <div className="hamburger-toggle-container hide-mobile">
+            <input 
+              type="checkbox" 
+              className="hamburger-check-input"
+              id="sidebar-hamburger-checkbox" 
+              checked={!isSidebarCollapsed} 
+              onChange={toggleSidebar} 
+            />
+            <label htmlFor="sidebar-hamburger-checkbox" className="sidebar-hamburger-btn">
+              <div className="hamburger-line-1"></div>
+              <div className="hamburger-line-2"></div>
+              <div className="hamburger-line-3"></div>
+            </label>
+          </div>
+          <Link to="/" className="navbar-logo">
+            <span className="logo-ic">IC</span>
+            <span className="logo-plus">+</span>
+          </Link>
+        </div>
         <div className="navbar-center hide-mobile">
           <span className="navbar-title">
             {variant === 'bidan' ? 'Dashboard Bidan' : ''}
