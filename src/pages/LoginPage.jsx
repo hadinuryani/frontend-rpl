@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { IconMail, IconLock, IconEye, IconEyeOff, IconLeaf, IconAlertTriangle, IconMessageCircle, IconKey } from '../components/Icons';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import BidanAvatar from '../components/BidanAvatar';
 import './AuthPages.css';
 
 export default function LoginPage() {
@@ -17,6 +18,36 @@ export default function LoginPage() {
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
+  
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const avatarRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!avatarRef.current) return;
+      const rect = avatarRef.current.getBoundingClientRect();
+      const avatarCenterX = rect.left + rect.width / 2;
+      const avatarCenterY = rect.top + rect.height / 2;
+      
+      const dx = e.clientX - avatarCenterX;
+      const dy = e.clientY - avatarCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const maxMove = 12; 
+      let moveX = 0;
+      let moveY = 0;
+      
+      if (distance > 0) {
+        moveX = (dx / distance) * Math.min(distance / 40, maxMove);
+        moveY = (dy / distance) * Math.min(distance / 40, maxMove);
+      }
+      
+      setMousePos({ x: moveX, y: moveY });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
   
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -117,7 +148,7 @@ export default function LoginPage() {
               <>
                 <h1>Masuk ke Akun Anda</h1>
                 <p>Kelola layanan kesehatan Anda dengan mudah</p>
-              </>
+              </> 
             )}
             {view === 'forgot' && (
               <>
@@ -134,71 +165,77 @@ export default function LoginPage() {
           </div>
 
           {view === 'login' && (
-            <form className="glass-card auth-card" onSubmit={handleSubmit} id="login-form">
-              {errors.general && (
-                <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <IconAlertTriangle size={18} />
-                  <span>{errors.general}</span>
-                </div>
-              )}
-              
-              <div className="form-group">
-                <label className="form-label" htmlFor="login-email">Email</label>
-                <div className="input-wrapper">
-                  <span className="input-icon"><IconMail size={18}/></span>
-                  <input
-                    type="email"
-                    id="login-email"
-                    className={`form-input ${errors.email ? 'error' : ''}`}
-                    placeholder="nama@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                </div>
-                {errors.email && <span className="form-error"><IconAlertTriangle size={14}/> {errors.email}</span>}
-              </div>
+            <div className="card uiverse-auth-card animate-fade-in-up">
+              <input
+                type="checkbox"
+                className="blind-check"
+                id="blind-input"
+                checked={!showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+                hidden
+              />
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="login-password">Password</label>
-                <div className="input-wrapper">
-                  <span className="input-icon"><IconLock size={18}/></span>
+              <form className="form" onSubmit={handleSubmit} id="login-form">
+                <div className="title">Masuk</div>
+
+                {errors.general && (
+                  <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', width: '100%', boxSizing: 'border-box' }}>
+                    <IconAlertTriangle size={18} />
+                    <span style={{ fontSize: '0.875rem' }}>{errors.general}</span>
+                  </div>
+                )}
+
+                <label className="label_input" htmlFor="login-email">Email</label>
+                <input
+                  spellCheck="false"
+                  className={`input ${errors.email ? 'error' : ''}`}
+                  type="email"
+                  id="login-email"
+                  placeholder="nama@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  required
+                />
+                {errors.email && <span className="form-error" style={{ alignSelf: 'flex-start', color: '#b91c1c', fontSize: '0.75rem', marginTop: '-4px', marginBottom: '8px' }}>{errors.email}</span>}
+
+                <div className="frg_pss">
+                  <label className="label_input" htmlFor="login-password">Password</label>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setView('forgot'); setOtpNoWa(''); setErrors({}); }}>Lupa password?</a>
+                </div>
+                <div className="password-wrapper" style={{ position: 'relative', width: '100%' }}>
                   <input
+                    spellCheck="false"
+                    className={`input ${errors.password ? 'error' : ''}`}
                     type={showPassword ? 'text' : 'password'}
                     id="login-password"
-                    className={`form-input ${errors.password ? 'error' : ''}`}
                     placeholder="Masukkan password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isSubmitting}
+                    required
+                    style={{ paddingRight: '80px' }}
                   />
-                  <button
-                    type="button"
-                    className="input-action"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label="Toggle password visibility"
-                    disabled={isSubmitting}
-                  >
-                    {showPassword ? <IconEyeOff size={18}/> : <IconEye size={18}/>}
-                  </button>
+                  <label htmlFor="blind-input" className="blind_input">
+                    <span className="hide">Hide</span>
+                    <span className="show">Show</span>
+                  </label>
                 </div>
-                {errors.password && <span className="form-error"><IconAlertTriangle size={14}/> {errors.password}</span>}
-              </div>
+                {errors.password && <span className="form-error" style={{ alignSelf: 'flex-start', color: '#b91c1c', fontSize: '0.75rem', marginTop: '4px', marginBottom: '8px' }}>{errors.password}</span>}
 
-              <div style={{ textAlign: 'right', marginBottom: 'var(--space-5)' }}>
-                <a href="#" className="forgot-link" onClick={(e) => { e.preventDefault(); setView('forgot'); setOtpNoWa(''); setErrors({}); }}>Lupa password?</a>
-              </div>
+                <button className="submit" type="submit" id="login-submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Memproses...' : 'Masuk'}
+                </button>
 
-              <button type="submit" className="btn btn-primary btn-full btn-lg" id="login-submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Memproses...' : 'Masuk'}
-              </button>
+                <p className="auth-link-text" style={{ marginTop: '1.5rem', fontSize: '0.875rem' }}>
+                  Belum punya akun? <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Daftar di sini</Link>
+                </p>
+              </form>
 
-              <div className="divider"><span>atau</span></div>
-
-              <p className="auth-link-text">
-                Belum punya akun? <Link to="/register">Daftar di sini</Link>
-              </p>
-            </form>
+              <label htmlFor="blind-input" className="avatar" ref={avatarRef}>
+                <BidanAvatar mousePos={mousePos} showPassword={showPassword} />
+              </label>
+            </div>
           )}
 
           {view === 'forgot' && (

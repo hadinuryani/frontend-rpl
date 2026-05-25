@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { IconFlower, IconMessageCircle, IconFemale, IconMale, IconArrowRight, IconArrowLeft, IconAlertTriangle } from '../components/Icons';
 import { useAuth } from '../context/AuthContext';
+import BidanAvatar from '../components/BidanAvatar';
 import './AuthPages.css';
 
 export default function RegisterPage() {
@@ -13,6 +14,37 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const avatarRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!avatarRef.current) return;
+      const rect = avatarRef.current.getBoundingClientRect();
+      const avatarCenterX = rect.left + rect.width / 2;
+      const avatarCenterY = rect.top + rect.height / 2;
+      
+      const dx = e.clientX - avatarCenterX;
+      const dy = e.clientY - avatarCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const maxMove = 12; 
+      let moveX = 0;
+      let moveY = 0;
+      
+      if (distance > 0) {
+        moveX = (dx / distance) * Math.min(distance / 40, maxMove);
+        moveY = (dy / distance) * Math.min(distance / 40, maxMove);
+      }
+      
+      setMousePos({ x: moveX, y: moveY });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const { register, user } = useAuth();
   const navigate = useNavigate();
@@ -116,27 +148,79 @@ export default function RegisterPage() {
           )}
 
           {step === 1 ? (
-            <form className="glass-card auth-card" onSubmit={handleNext} id="register-step1">
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-email">Email <span className="required">*</span></label>
-                <input type="email" id="reg-email" className={`form-input ${errors.email ? 'error' : ''}`} placeholder="nama@email.com" value={form.email} onChange={(e) => update('email', e.target.value)} required />
-                {errors.email && <span className="form-error" style={{marginTop: 4, display:'block', fontSize:12, color:'#b91c1c'}}>{errors.email}</span>}
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-password">Password <span className="required">*</span></label>
-                <input type="password" id="reg-password" className={`form-input ${errors.password ? 'error' : ''}`} placeholder="Minimal 8 karakter" value={form.password} onChange={(e) => update('password', e.target.value)} required minLength="8" />
-                {errors.password && <span className="form-error" style={{marginTop: 4, display:'block', fontSize:12, color:'#b91c1c'}}>{errors.password}</span>}
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-confirm">Konfirmasi Password <span className="required">*</span></label>
-                <input type="password" id="reg-confirm" className={`form-input ${errors.confirmPassword ? 'error' : ''}`} placeholder="Ulangi password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} required />
-                {errors.confirmPassword && <span className="form-error" style={{marginTop: 4, display:'block', fontSize:12, color:'#b91c1c'}}>{errors.confirmPassword}</span>}
-              </div>
-              <button type="submit" className="btn btn-primary btn-full btn-lg" id="register-next">Lanjut <IconArrowRight size={18}/></button>
-              <p className="auth-link-text" style={{ marginTop: '16px' }}>
-                Sudah punya akun? <Link to="/login">Masuk di sini</Link>
-              </p>
-            </form>
+            <div className="card uiverse-auth-card animate-fade-in-up">
+              <input
+                type="checkbox"
+                className="blind-check"
+                id="blind-input"
+                checked={!showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+                hidden
+              />
+
+              <form className="form" onSubmit={handleNext} id="register-step1">
+                <div className="title">Daftar</div>
+
+                <label className="label_input" htmlFor="reg-email">Email <span className="required">*</span></label>
+                <input
+                  spellCheck="false"
+                  className={`input ${errors.email ? 'error' : ''}`}
+                  type="email"
+                  id="reg-email"
+                  placeholder="nama@email.com"
+                  value={form.email}
+                  onChange={(e) => update('email', e.target.value)}
+                  required
+                />
+                {errors.email && <span className="form-error" style={{ alignSelf: 'flex-start', color: '#b91c1c', fontSize: '0.75rem', marginTop: '-4px', marginBottom: '8px' }}>{errors.email}</span>}
+
+                <label className="label_input" htmlFor="reg-password">Password <span className="required">*</span></label>
+                <div className="password-wrapper" style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    spellCheck="false"
+                    className={`input ${errors.password ? 'error' : ''}`}
+                    type={showPassword ? 'text' : 'password'}
+                    id="reg-password"
+                    placeholder="Minimal 8 karakter"
+                    value={form.password}
+                    onChange={(e) => update('password', e.target.value)}
+                    required
+                    minLength="8"
+                    style={{ paddingRight: '80px' }}
+                  />
+                  <label htmlFor="blind-input" className="blind_input">
+                    <span className="hide">Hide</span>
+                    <span className="show">Show</span>
+                  </label>
+                </div>
+                {errors.password && <span className="form-error" style={{ alignSelf: 'flex-start', color: '#b91c1c', fontSize: '0.75rem', marginTop: '4px', marginBottom: '8px' }}>{errors.password}</span>}
+
+                <label className="label_input" htmlFor="reg-confirm">Konfirmasi Password <span className="required">*</span></label>
+                <input
+                  spellCheck="false"
+                  className={`input ${errors.confirmPassword ? 'error' : ''}`}
+                  type={showPassword ? 'text' : 'password'}
+                  id="reg-confirm"
+                  placeholder="Ulangi password"
+                  value={form.confirmPassword}
+                  onChange={(e) => update('confirmPassword', e.target.value)}
+                  required
+                />
+                {errors.confirmPassword && <span className="form-error" style={{ alignSelf: 'flex-start', color: '#b91c1c', fontSize: '0.75rem', marginTop: '-4px', marginBottom: '8px' }}>{errors.confirmPassword}</span>}
+
+                <button className="submit" type="submit" id="register-next">
+                  Lanjut <IconArrowRight size={18} style={{ marginLeft: '4px', verticalAlign: 'middle' }}/>
+                </button>
+
+                <p className="auth-link-text" style={{ marginTop: '1.5rem', fontSize: '0.875rem' }}>
+                  Sudah punya akun? <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Masuk di sini</Link>
+                </p>
+              </form>
+
+              <label htmlFor="blind-input" className="avatar" ref={avatarRef}>
+                <BidanAvatar mousePos={mousePos} showPassword={showPassword} />
+              </label>
+            </div>
           ) : (
             <form className="glass-card auth-card" onSubmit={handleSubmit} id="register-step2">
               <div className="form-group">
