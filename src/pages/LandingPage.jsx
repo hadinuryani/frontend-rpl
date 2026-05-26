@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import Navbar from '../components/Navbar';
+import SplashCursor from '../components/SplashCursor';
 import {
   IconPregnant,
   IconBaby,
@@ -118,6 +119,17 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
+      <SplashCursor
+        SIM_RESOLUTION={128}
+        DYE_RESOLUTION={1440}
+        DENSITY_DISSIPATION={3.5}
+        VELOCITY_DISSIPATION={0.5}
+        PRESSURE={0.1}
+        CURL={3}
+        SPLAT_RADIUS={0.2}
+        SPLAT_FORCE={6000}
+        COLOR_UPDATE_SPEED={10}
+      />
       <Navbar variant="public" />
 
       {/* Hero Section */}
@@ -125,46 +137,20 @@ export default function LandingPage() {
         <div className="container hero-content">
           <div className="hero-text animate-fade-in-up">
             {klinikStatus && (
-              <div
-                className="clinic-status-pill"
-                style={{
-                  backgroundColor:
-                    klinikStatus.status === 'buka'
-                      ? 'rgba(64,145,108,0.1)'
-                      : 'rgba(200,50,50,0.1)',
-
-                  color:
-                    klinikStatus.status === 'buka'
-                      ? '#40916C'
-                      : '#c83232',
-
-                  border: `1px solid ${
-                    klinikStatus.status === 'buka'
-                      ? 'rgba(64,145,108,0.3)'
-                      : 'rgba(200,50,50,0.3)'
-                  }`,
-                }}
-              >
-                <span
-                  className="pulse-dot"
-                  style={{
-                    backgroundColor:
-                      klinikStatus.status === 'buka'
-                        ? '#40916C'
-                        : '#c83232',
-                  }}
-                ></span>
-
+              <div className={`clinic-status-pill ${klinikStatus.status === 'buka' ? 'status-open' : 'status-closed'}`}>
+                <div className="dots-border"></div>
+                <span className={`pulse-dot ${klinikStatus.status === 'buka' ? 'green' : 'red'}`}></span>
                 <span>
                   {klinikStatus.status === 'buka'
-                    ? 'Klinik Sedang Buka'
-                    : 'Klinik Sedang Tutup'}
+                    ? 'Klinik Buka • Siap Melayani'
+                    : 'Klinik Tutup • Di Luar Jam Kerja'}
                 </span>
               </div>
             )}
 
             {!klinikStatus && (
-              <div className="clinic-status-pill">
+              <div className="clinic-status-pill status-loading">
+                <div className="dots-border"></div>
                 <span
                   className="pulse-dot"
                   style={{
@@ -172,7 +158,6 @@ export default function LandingPage() {
                     backgroundColor: '#ccc',
                   }}
                 ></span>
-
                 <span>Memeriksa Status...</span>
               </div>
             )}
@@ -186,9 +171,25 @@ export default function LandingPage() {
 
             <p className="hero-subtitle">
               Nikmati kemudahan akses layanan kebidanan profesional
-              melalui platform digital Indah Care Plus.
-              Kesehatan Anda, prioritas kami.
+              melalui platform digital Indah Care Plus. Pendampingan kehamilan yang aman, nyaman, dan praktis dari rumah Anda.
             </p>
+
+            <div className="hero-stats-strip animate-fade-in-up">
+              <div className="stat-item">
+                <span className="stat-num">15+</span>
+                <span className="stat-label">Tahun Pengalaman</span>
+              </div>
+              <div className="stat-divider"></div>
+              <div className="stat-item">
+                <span className="stat-num">1K+</span>
+                <span className="stat-label">Ibu Terbantu</span>
+              </div>
+              <div className="stat-divider"></div>
+              <div className="stat-item">
+                <span className="stat-num">100%</span>
+                <span className="stat-label">STR Terakreditasi</span>
+              </div>
+            </div>
 
             <div className="hero-ctas">
               <Link
@@ -265,6 +266,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Trust Section: Mengapa Memilih Kami */}
+      <section className="trust-section">
+        <div className="container">
+          <div className="section-header text-center">
+            <h2>Mengapa Memilih Indah Care Plus?</h2>
+            <p className="text-accent">
+              Keunggulan layanan kebidanan modern berstandar klinik profesional
+            </p>
+          </div>
+          
+          <div className="trust-grid stagger-children">
+            <div className="trust-card glass-card">
+              <div className="trust-icon-wrapper">
+                <IconShield size={28} />
+              </div>
+              <h4>Bidan STR-Verified</h4>
+              <p>Didampingi oleh bidan profesional berlisensi STR aktif dan berpengalaman lebih dari 15 tahun.</p>
+            </div>
+            
+            <div className="trust-card glass-card">
+              <div className="trust-icon-wrapper">
+                <IconClipboard size={28} />
+              </div>
+              <h4>Registrasi Antrean Digital</h4>
+              <p>Tidak perlu antre lama di klinik. Lakukan pendaftaran dan pantau status antrean secara real-time.</p>
+            </div>
+            
+            <div className="trust-card glass-card">
+              <div className="trust-icon-wrapper">
+                <IconHeart size={28} />
+              </div>
+              <h4>Pelayanan Ramah & Nyaman</h4>
+              <p>Perawatan komprehensif yang mengutamakan kenyamanan fisik dan psikologis ibu serta sang buah hati.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section className="about-section" id="tentang">
         <div className="container about-content">
@@ -308,6 +347,23 @@ export default function LandingPage() {
                 <IconCheckCircle size={14} />
                 {' '}Profesi Bidan
               </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-banner-section">
+        <div className="container">
+          <div className="cta-banner-content glass-card dark-green-gradient">
+            <div className="cta-text-wrapper">
+              <h2>Kesehatan Ibu & Anak Adalah Prioritas Utama Kami</h2>
+              <p>Mulai perjalanan kehamilan sehat dan persalinan aman dengan layanan digital Indah Care Plus.</p>
+            </div>
+            <div className="cta-action-wrapper">
+              <Link to="/register" className="btn btn-gold btn-lg">
+                Daftar Akun Sekarang
+              </Link>
             </div>
           </div>
         </div>

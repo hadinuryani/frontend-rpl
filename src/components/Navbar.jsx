@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IconBell, IconMenuFold, IconMenuUnfold } from './Icons';
 import api from '../services/api';
+import GooeyNav from './GooeyNav';
 import './Navbar.css';
 
 export default function Navbar({ variant = 'public', userName = '' }) {
@@ -27,6 +28,52 @@ export default function Navbar({ variant = 'public', userName = '' }) {
       return next;
     });
   };
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef(null);
+
+  const navItems = [
+    { label: 'Beranda', href: '#beranda' },
+    { label: 'Layanan', href: '#layanan' },
+    { label: 'Tentang', href: '#tentang' }
+  ];
+
+  const handleNavClick = (index) => {
+    isScrollingRef.current = true;
+    setActiveIndex(index);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 1000);
+  };
+
+  useEffect(() => {
+    if (variant !== 'public') return;
+
+    const sections = ['beranda', 'layanan', 'tentang'];
+    const handleScroll = () => {
+      if (isScrollingRef.current) return;
+      
+      const scrollPosition = window.scrollY + 160; // offset for header
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && scrollPosition >= el.offsetTop) {
+          setActiveIndex(i);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, [variant]);
 
 
   useEffect(() => {
@@ -95,9 +142,11 @@ export default function Navbar({ variant = 'public', userName = '' }) {
             <span className="logo-plus">+</span>
           </Link>
           <div className="navbar-links hide-mobile">
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Beranda</Link>
-            <a href="#layanan">Layanan</a>
-            <a href="#tentang">Tentang</a>
+            <GooeyNav
+              items={navItems}
+              activeIndex={activeIndex}
+              onChange={handleNavClick}
+            />
           </div>
           <div className="navbar-actions">
             <Link to="/login" className="btn btn-ghost btn-sm">Masuk</Link>
