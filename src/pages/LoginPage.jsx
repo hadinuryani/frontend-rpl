@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { IconMail, IconLock, IconEye, IconEyeOff, IconLeaf, IconAlertTriangle, IconMessageCircle, IconKey } from '../components/Icons';
+import { IconLock, IconEye, IconEyeOff, IconLeaf, IconAlertTriangle, IconMessageCircle, IconKey } from '../components/Icons';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import BidanAvatar from '../components/BidanAvatar';

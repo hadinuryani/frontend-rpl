@@ -15,7 +15,7 @@ export default function ControlSchedule() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [tanggalKontrol, setTanggalKontrol] = useState('');
   const [catatan, setCatatan] = useState('');
-  
+
   const [patients, setPatients] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +52,7 @@ export default function ControlSchedule() {
     fetchData();
   }, []);
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = patients.filter(p =>
     p.nama_lengkap.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -106,10 +106,10 @@ export default function ControlSchedule() {
         <div className="page-content">
           <div className="page-header">
             <div className="page-title">
-              <Link to="/bidan" className="back-btn"><IconArrowLeft size={18}/></Link>
+              <Link to="/bidan" className="back-btn"><IconArrowLeft size={18} /></Link>
               <h2>Kelola Jadwal Kontrol</h2>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={fetchData}><IconRefresh size={16}/> Refresh</button>
+            <button className="btn btn-secondary btn-sm" onClick={fetchData}><IconRefresh size={16} /> Refresh</button>
           </div>
           <div className="split-layout-equal">
             <div>
@@ -118,14 +118,14 @@ export default function ControlSchedule() {
                 <div className="form-group" style={{ position: 'relative' }}>
                   <label className="form-label">Cari Pasien</label>
                   <input className="form-input" placeholder="Ketik nama pasien..." value={search}
-                    onChange={(e) => { 
-                      setSearch(e.target.value); 
+                    onChange={(e) => {
+                      setSearch(e.target.value);
                       setShowDropdown(true);
                       if (selectedPatient && e.target.value !== selectedPatient.nama_lengkap) {
                         setSelectedPatient(null);
                       }
                     }}
-                    onFocus={() => setShowDropdown(true)} 
+                    onFocus={() => setShowDropdown(true)}
                     disabled={isSubmitting}
                   />
                   {showDropdown && search && !selectedPatient && (
@@ -159,7 +159,7 @@ export default function ControlSchedule() {
                   <textarea className="form-textarea" placeholder="Catatan khusus untuk pasien..." rows="3" value={catatan} onChange={(e) => setCatatan(e.target.value)} disabled={isSubmitting}></textarea>
                 </div>
                 <div className="info-box" style={{ marginBottom: 'var(--space-5)' }}>
-                  <IconMessageCircle size={16}/> Pasien akan otomatis mendapat notifikasi WA H-1 sebelum jadwal kontrol
+                  <IconMessageCircle size={16} /> Pasien akan otomatis mendapat notifikasi WA H-1 sebelum jadwal kontrol
                 </div>
                 <button className="btn btn-primary btn-full btn-lg" onClick={handleSave} disabled={isSubmitting || !selectedPatient || !tanggalKontrol}>
                   {isSubmitting ? 'Menyimpan...' : 'Simpan Jadwal Kontrol'}
@@ -169,16 +169,16 @@ export default function ControlSchedule() {
               {/* Setting reminder time card */}
               <div className="glass-card" style={{ padding: 'var(--space-6)', marginTop: 'var(--space-6)' }}>
                 <h4 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 var(--space-4) 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', color: 'var(--color-text)' }}>
-                  <IconSettings size={18} color="var(--color-primary)"/> Pengaturan Pengiriman WA & Info Klinik
+                  <IconSettings size={18} color="var(--color-primary)" /> Pengaturan Pengiriman WA & Info Klinik
                 </h4>
-                
+
                 <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                   <label className="form-label" style={{ fontSize: '0.8125rem' }}>Nama Klinik</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={namaKlinik} 
-                    onChange={(e) => setNamaKlinik(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={namaKlinik}
+                    onChange={(e) => setNamaKlinik(e.target.value)}
                     disabled={isSavingSetting}
                     placeholder="Nama Klinik"
                   />
@@ -186,10 +186,10 @@ export default function ControlSchedule() {
 
                 <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                   <label className="form-label" style={{ fontSize: '0.8125rem' }}>Alamat Klinik</label>
-                  <textarea 
-                    className="form-textarea" 
-                    value={alamatKlinik} 
-                    onChange={(e) => setAlamatKlinik(e.target.value)} 
+                  <textarea
+                    className="form-textarea"
+                    value={alamatKlinik}
+                    onChange={(e) => setAlamatKlinik(e.target.value)}
                     disabled={isSavingSetting}
                     placeholder="Alamat Klinik"
                     rows="2"
@@ -198,11 +198,11 @@ export default function ControlSchedule() {
 
                 <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                   <label className="form-label" style={{ fontSize: '0.8125rem' }}>Jam Layanan Kontrol (Default)</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={jamKontrol} 
-                    onChange={(e) => setJamKontrol(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={jamKontrol}
+                    onChange={(e) => setJamKontrol(e.target.value)}
                     disabled={isSavingSetting}
                     placeholder="Contoh: 08:00 - selesai"
                   />
@@ -210,19 +210,19 @@ export default function ControlSchedule() {
 
                 <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
                   <label className="form-label" style={{ fontSize: '0.8125rem' }}>Jam Pengiriman Notifikasi (H-1)</label>
-                  <input 
-                    type="time" 
-                    className="form-input" 
-                    value={waktuPengingat} 
-                    onChange={(e) => setWaktuPengingat(e.target.value)} 
+                  <input
+                    type="time"
+                    className="form-input"
+                    value={waktuPengingat}
+                    onChange={(e) => setWaktuPengingat(e.target.value)}
                     disabled={isSavingSetting}
                     style={{ maxWidth: '140px' }}
                   />
                 </div>
 
-                <button 
-                  className="btn btn-primary btn-full" 
-                  onClick={handleSaveSetting} 
+                <button
+                  className="btn btn-primary btn-full"
+                  onClick={handleSaveSetting}
                   disabled={isSavingSetting}
                 >
                   {isSavingSetting ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}
@@ -256,7 +256,7 @@ export default function ControlSchedule() {
                           <td style={{ padding: '12px 16px' }}>
                             <span className={`badge ${s.status_notifikasi?.toLowerCase() === 'terkirim' ? 'badge-success' : s.status_notifikasi?.toLowerCase() === 'gagal' ? 'badge-danger' : 'badge-gray'}`}>
                               {s.status_notifikasi?.toLowerCase() === 'terkirim' ? (
-                                <><IconCheckCircle size={12}/> WA Terkirim</>
+                                <><IconCheckCircle size={12} /> WA Terkirim</>
                               ) : s.status_notifikasi?.toLowerCase() === 'gagal' ? (
                                 'Gagal Kirim'
                               ) : (
