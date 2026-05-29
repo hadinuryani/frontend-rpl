@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconSearch, IconPlus, IconX, IconRefresh, IconClipboard, IconPill } from '../../components/Icons';
+import LoadingAnimation from '../../components/LoadingAnimation';
+import { IconArrowLeft, IconArrowRight, IconSearch, IconPlus, IconX, IconRefresh, IconClipboard, IconPill, IconEdit } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 import api from '../../services/api';
 import './BidanPages.css';
 
 export default function PatientData() {
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const [search, setSearch] = useState('');
   const [showDrawer, setShowDrawer] = useState(false);
   
@@ -17,6 +20,11 @@ export default function PatientData() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editId, setEditId] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 10;
 
   const [selectedPatientForRM, setSelectedPatientForRM] = useState(null);
   const [patientRMList, setPatientRMList] = useState([]);
@@ -31,21 +39,34 @@ export default function PatientData() {
     golonganDarah: ''
   });
 
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async (pageNumber = currentPage, searchVal = search) => {
     setIsLoading(true);
     try {
-      const res = await api.get('/bidan/pasien?limit=100');
+      const res = await api.get(`/bidan/pasien?page=${pageNumber}&limit=${limit}&search=${encodeURIComponent(searchVal)}`);
       setPatients(res.data || []);
+      if (res.meta) {
+        setTotalPages(res.meta.total_pages || 1);
+        setTotalItems(res.meta.total || 0);
+      }
     } catch (err) {
       console.error("Gagal mengambil data pasien:", err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, search]);
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [currentPage]);
+
+  // Debounce search: reset to page 1 when search changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+      fetchPatients(1, search);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleOpenDrawer = (patient = null) => {
     if (patient) {
@@ -92,7 +113,10 @@ export default function PatientData() {
   };
 
   const handleSubmit = async () => {
-    if (!form.namaLengkap) return alert("Nama lengkap wajib diisi");
+    if (!form.namaLengkap) {
+      await showAlert("Nama lengkap wajib diisi", { variant: 'warning', title: 'Peringatan' });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -107,25 +131,20 @@ export default function PatientData() {
 
       if (editId) {
         await api.put(`/bidan/pasien/${editId}`, payload);
-        alert('Data pasien berhasil diperbarui!');
+        await showAlert('Data pasien berhasil diperbarui!', { variant: 'success', title: 'Sukses' });
       } else {
         await api.post('/bidan/pasien', payload);
-        alert('Pasien baru berhasil ditambahkan!');
+        await showAlert('Pasien baru berhasil ditambahkan!', { variant: 'success', title: 'Sukses' });
       }
       
       handleCloseDrawer();
       fetchPatients();
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan data pasien');
+      await showAlert(err.message || 'Gagal menyimpan data pasien', { variant: 'error', title: 'Gagal' });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const filtered = patients.filter(p => 
-    p.nama_lengkap.toLowerCase().includes(search.toLowerCase()) ||
-    (p.no_wa && p.no_wa.includes(search))
-  );
 
   return (
     <div className="app-layout" id="patient-data">
@@ -138,7 +157,7 @@ export default function PatientData() {
               <Link to="/bidan" className="back-btn"><IconArrowLeft size={18}/></Link>
               <h2>Data Pasien</h2>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={fetchPatients}><IconRefresh size={16}/> Refresh</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => fetchPatients()}><IconRefresh size={16}/> Refresh</button>
           </div>
           <div className="action-row">
             <div className="input-wrapper search-input" style={{ flex: 1 }}>
@@ -151,18 +170,22 @@ export default function PatientData() {
               <thead><tr><th>Nama</th><th>Usia</th><th>No. WhatsApp</th><th>Tanggal Daftar</th><th>Aksi</th></tr></thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>Memuat data...</td></tr>
-                ) : filtered.length === 0 ? (
+                  <tr><td colSpan="5"><LoadingAnimation /></td></tr>
+                ) : patients.length === 0 ? (
                   <tr><td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>Data pasien tidak ditemukan</td></tr>
-                ) : filtered.map(p => (
+                ) : patients.map(p => (
                   <tr key={p.id}>
                     <td style={{ fontWeight: 500 }}>{p.nama_lengkap}</td>
                     <td>{p.umur ? `${p.umur} th` : '-'}</td>
                     <td>{p.no_wa || '-'}</td>
                     <td>{new Date(p.created_at).toLocaleDateString('id-ID')}</td>
                     <td style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-ghost btn-sm" onClick={() => handleOpenRM(p)}>Rekam Medis</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => handleOpenDrawer(p)}>Edit</button>
+                      <button className="btn-action-record" onClick={() => handleOpenRM(p)} title="Rekam Medis">
+                        <IconClipboard size={16} />
+                      </button>
+                      <button className="btn-action-edit" onClick={() => handleOpenDrawer(p)} title="Edit Pasien">
+                        <IconEdit size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -171,21 +194,49 @@ export default function PatientData() {
           </div>
           <div className="hide-desktop" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             {isLoading ? (
-              <div style={{textAlign: 'center', padding: '20px'}}>Memuat data...</div>
-            ) : filtered.length === 0 ? (
+              <LoadingAnimation />
+            ) : patients.length === 0 ? (
               <div style={{textAlign: 'center', padding: '20px'}}>Data tidak ditemukan</div>
-            ) : filtered.map(p => (
+            ) : patients.map(p => (
               <div className="glass-card" key={p.id} style={{ padding: 'var(--space-4)' }}>
                 <div style={{ fontWeight: 600, color: 'var(--color-dark)', marginBottom: '4px' }}>{p.nama_lengkap}</div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)' }}>{p.umur ? `${p.umur} tahun` : 'Usia belum diatur'} • {p.no_wa || 'No WA belum diatur'}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>Daftar: {new Date(p.created_at).toLocaleDateString('id-ID')}</div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => handleOpenRM(p)}>Rekam Medis</button>
-                  <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => handleOpenDrawer(p)}>Edit</button>
+                <div className="action-btn-group">
+                  <button className="btn-action-record" onClick={() => handleOpenRM(p)} title="Rekam Medis">
+                    <IconClipboard size={16} />
+                  </button>
+                  <button className="btn-action-edit" onClick={() => handleOpenDrawer(p)} title="Edit Pasien">
+                    <IconEdit size={16} />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
+          {/* Pagination UI */}
+          {totalPages > 1 && (
+            <div className="pagination-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+              <button 
+                className="btn btn-secondary btn-sm btn-icon" 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                title="Halaman Sebelumnya"
+              >
+                <IconArrowLeft size={16} />
+              </button>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text-light)' }}>
+                Halaman {currentPage} dari {totalPages}
+              </span>
+              <button 
+                className="btn btn-secondary btn-sm btn-icon" 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                title="Halaman Selanjutnya"
+              >
+                <IconArrowRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <BottomNav variant="bidan" />
@@ -257,7 +308,7 @@ export default function PatientData() {
             </div>
             <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
               {isLoadingRM ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>Memuat data rekam medis...</div>
+                <LoadingAnimation />
               ) : patientRMList.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                   Belum ada riwayat rekam medis untuk pasien ini.

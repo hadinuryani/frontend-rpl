@@ -5,11 +5,13 @@ import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
 import { IconArrowLeft, IconClipboard, IconPill, IconTrash, IconPlus, IconUser, IconMapPin, IconMessageCircle, IconCheckCircle, IconWhatsApp, IconFemale, IconMale } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 import api from '../../services/api';
 import './BidanPages.css';
 
 export default function ExaminationForm() {
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -20,6 +22,7 @@ export default function ExaminationForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClinicOpen, setIsClinicOpen] = useState(true);
+  const [isHamil, setIsHamil] = useState(false);
 
   const [form, setForm] = useState({
     keluhanUtama: '',
@@ -38,8 +41,9 @@ export default function ExaminationForm() {
 
   useEffect(() => {
     if (!antrianId) {
-      alert("Antrian ID tidak ditemukan");
-      navigate('/bidan/queue');
+      showAlert("Antrian ID tidak ditemukan", { variant: 'error', title: 'Gagal' }).then(() => {
+        navigate('/bidan/queue');
+      });
       return;
     }
 
@@ -59,9 +63,17 @@ export default function ExaminationForm() {
         if (antrianRes.data && antrianRes.data.keluhan) {
           setForm(prev => ({ ...prev, keluhanUtama: antrianRes.data.keluhan }));
         }
+        
+        // Initialize isHamil state based on patient data
+        if (antrianRes.data && antrianRes.data.jenis_kelamin === 'perempuan') {
+          setIsHamil(!!antrianRes.data.is_hamil);
+        } else {
+          setIsHamil(false);
+        }
       } catch (err) {
-        alert("Gagal memuat data: " + (err.message || 'Error'));
-        navigate('/bidan/queue');
+        showAlert("Gagal memuat data: " + (err.message || 'Error'), { variant: 'error', title: 'Gagal' }).then(() => {
+          navigate('/bidan/queue');
+        });
       } finally {
         setIsLoading(false);
       }
@@ -78,18 +90,18 @@ export default function ExaminationForm() {
 
   const handleSubmit = async () => {
     if (!isClinicOpen) {
-      alert('Klinik sedang tutup. Tidak dapat menyimpan rekam medis saat klinik tutup.');
+      await showAlert('Klinik sedang tutup. Tidak dapat menyimpan rekam medis saat klinik tutup.', { variant: 'warning', title: 'Peringatan' });
       return;
     }
 
     if (!form.keluhanUtama) {
-      alert('Keluhan utama wajib diisi');
+      await showAlert('Keluhan utama wajib diisi', { variant: 'warning', title: 'Peringatan' });
       return;
     }
 
     const validMedicines = medicines.filter(m => m.obat_id && m.dose && m.usage);
     if (validMedicines.length === 0) {
-      alert('Minimal masukkan satu resep obat dengan lengkap');
+      await showAlert('Minimal masukkan satu resep obat dengan lengkap', { variant: 'warning', title: 'Peringatan' });
       return;
     }
 
@@ -100,8 +112,9 @@ export default function ExaminationForm() {
         keluhan_utama: form.keluhanUtama,
         tekanan_darah: (form.tekananDarahSistol && form.tekananDarahDiastol) ? `${form.tekananDarahSistol}/${form.tekananDarahDiastol}` : undefined,
         berat_badan: form.beratBadan ? parseFloat(form.beratBadan) : undefined,
-        tinggi_fundus_uteri: form.tinggiFundus ? parseFloat(form.tinggiFundus) : undefined,
-        kondisi_janin: form.kondisiJanin || undefined,
+        tinggi_fundus_uteri: (antrian?.jenis_kelamin === 'perempuan' && isHamil && form.tinggiFundus) ? parseFloat(form.tinggiFundus) : undefined,
+        kondisi_janin: (antrian?.jenis_kelamin === 'perempuan' && isHamil) ? (form.kondisiJanin || undefined) : undefined,
+        is_hamil: antrian?.jenis_kelamin === 'perempuan' ? isHamil : false,
         catatan_tambahan: form.catatanTambahan || undefined,
         resep: validMedicines.map(m => ({
           obat_id: parseInt(m.obat_id),
@@ -115,10 +128,10 @@ export default function ExaminationForm() {
       };
 
       await api.post('/bidan/rekam-medis', payload);
-      alert('Pemeriksaan selesai dan resep berhasil disimpan!');
+      await showAlert('Pemeriksaan selesai dan resep berhasil disimpan!', { variant: 'success', title: 'Sukses' });
       navigate('/bidan/queue');
     } catch (err) {
-      alert("Gagal menyimpan rekam medis: " + err.message);
+      await showAlert("Gagal menyimpan rekam medis: " + err.message, { variant: 'error', title: 'Gagal' });
     } finally {
       setIsSubmitting(false);
     }
@@ -198,12 +211,57 @@ export default function ExaminationForm() {
                   <div className="form-group"><label className="form-label">Tekanan Darah (Sistol)</label><div className="input-wrapper"><input type="number" className="form-input" placeholder="120" value={form.tekananDarahSistol} onChange={(e) => updateForm('tekananDarahSistol', e.target.value)} disabled={isSubmitting}/><span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>mmHg</span></div></div>
                   <div className="form-group"><label className="form-label">Tekanan Darah (Diastol)</label><div className="input-wrapper"><input type="number" className="form-input" placeholder="80" value={form.tekananDarahDiastol} onChange={(e) => updateForm('tekananDarahDiastol', e.target.value)} disabled={isSubmitting}/><span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>mmHg</span></div></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                  <div className="form-group"><label className="form-label">Berat Badan</label><div className="input-wrapper"><input type="number" className="form-input" placeholder="65" value={form.beratBadan} onChange={(e) => updateForm('beratBadan', e.target.value)} disabled={isSubmitting} /><span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>kg</span></div></div>
-                  <div className="form-group"><label className="form-label">Tinggi Fundus Uteri <span className="form-hint">(Khusus Ibu Hamil)</span></label><div className="input-wrapper"><input type="number" className="form-input" placeholder="28" value={form.tinggiFundus} onChange={(e) => updateForm('tinggiFundus', e.target.value)} disabled={isSubmitting} /><span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>cm</span></div></div>
+                {antrian?.jenis_kelamin === 'perempuan' && (
+                  <div className="pregnancy-toggle-container" style={{ margin: 'var(--space-4) 0', padding: '16px', background: 'rgba(236, 72, 153, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(236, 72, 153, 0.15)', marginBottom: 'var(--space-5)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#ec4899', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ec4899' }}
+                        checked={isHamil} 
+                        onChange={(e) => {
+                          setIsHamil(e.target.checked);
+                          if (!e.target.checked) {
+                            updateForm('tinggiFundus', '');
+                            updateForm('kondisiJanin', '');
+                          }
+                        }} 
+                        disabled={isSubmitting}
+                      />
+                      Pasien Sedang Hamil?
+                    </label>
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: isHamil ? '1fr 1fr' : '1fr', gap: 'var(--space-4)' }}>
+                  <div className="form-group">
+                    <label className="form-label">Berat Badan</label>
+                    <div className="input-wrapper">
+                      <input type="number" className="form-input" placeholder="65" value={form.beratBadan} onChange={(e) => updateForm('beratBadan', e.target.value)} disabled={isSubmitting} />
+                      <span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>kg</span>
+                    </div>
+                  </div>
+                  {isHamil && (
+                    <div className="form-group pregnancy-fade-in">
+                      <label className="form-label">Tinggi Fundus Uteri <span className="form-hint">(Ibu Hamil)</span></label>
+                      <div className="input-wrapper">
+                        <input type="number" className="form-input" placeholder="28" value={form.tinggiFundus} onChange={(e) => updateForm('tinggiFundus', e.target.value)} disabled={isSubmitting} />
+                        <span className="input-action" style={{ cursor: 'default', color: 'var(--color-text-muted)' }}>cm</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="form-group"><label className="form-label">Kondisi Janin <span className="form-hint">(Khusus Ibu Hamil)</span></label><textarea className="form-textarea" placeholder="DJJ, posisi, gerakan..." rows="2" value={form.kondisiJanin} onChange={(e) => updateForm('kondisiJanin', e.target.value)} disabled={isSubmitting}></textarea></div>
-                <div className="form-group"><label className="form-label">Catatan Tambahan</label><textarea className="form-textarea" placeholder="Catatan lain..." rows="2" value={form.catatanTambahan} onChange={(e) => updateForm('catatanTambahan', e.target.value)} disabled={isSubmitting}></textarea></div>
+
+                {isHamil && (
+                  <div className="form-group pregnancy-fade-in">
+                    <label className="form-label">Kondisi Janin <span className="form-hint">(Ibu Hamil)</span></label>
+                    <textarea className="form-textarea" placeholder="DJJ, posisi, gerakan..." rows="2" value={form.kondisiJanin} onChange={(e) => updateForm('kondisiJanin', e.target.value)} disabled={isSubmitting}></textarea>
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label className="form-label">Catatan Tambahan</label>
+                  <textarea className="form-textarea" placeholder="Catatan lain..." rows="2" value={form.catatanTambahan} onChange={(e) => updateForm('catatanTambahan', e.target.value)} disabled={isSubmitting}></textarea>
+                </div>
                 
                 {/* Penjadwalan Kontrol Kembali */}
                 <div style={{ marginTop: 'var(--space-6)', padding: '16px', background: 'rgba(26, 178, 149, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(26, 178, 149, 0.15)', marginBottom: 'var(--space-5)' }}>

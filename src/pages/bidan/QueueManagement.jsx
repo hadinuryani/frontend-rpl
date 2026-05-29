@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
+import LoadingAnimation from '../../components/LoadingAnimation';
 import { IconArrowLeft, IconQueue, IconCheck, IconRefresh } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 import api from '../../services/api';
 import './BidanPages.css';
 
 export default function QueueManagement() {
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const [filter, setFilter] = useState('Semua');
   const [queueData, setQueueData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,9 +82,7 @@ export default function QueueManagement() {
           </div>
           
           {isLoading ? (
-            <div className="empty-state">
-              <div className="empty-title">Memuat data antrian...</div>
-            </div>
+            <LoadingAnimation />
           ) : filtered.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon"><IconQueue size={64} color="var(--color-text-muted)"/></div>
@@ -106,7 +107,7 @@ export default function QueueManagement() {
                         <button 
                           className="btn btn-secondary btn-sm" 
                           style={{ opacity: 0.6, cursor: 'not-allowed' }} 
-                          onClick={() => alert('Klinik sedang tutup. Silakan buka status klinik di Dashboard terlebih dahulu.')}
+                          onClick={() => showAlert('Klinik sedang tutup. Silakan buka status klinik di Dashboard terlebih dahulu.', { variant: 'warning', title: 'Klinik Tutup' })}
                         >
                           Periksa Sekarang →
                         </button>

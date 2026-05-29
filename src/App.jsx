@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { AlertProvider } from './context/AlertContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -23,6 +24,7 @@ const ControlSchedule = lazy(() => import('./pages/bidan/ControlSchedule'));
 const VisitMonitor = lazy(() => import('./pages/bidan/VisitMonitor'));
 const PatientData = lazy(() => import('./pages/bidan/PatientData'));
 const MedicineInventory = lazy(() => import('./pages/bidan/MedicineInventory'));
+const BidanNotifications = lazy(() => import('./pages/bidan/Notifications'));
 
 function LoadingSpinner() {
   return (
@@ -72,39 +74,42 @@ function LoadingSpinner() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+      <AlertProvider>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            {/* Patient Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['pasien']} />}>
-              <Route path="/patient" element={<PatientDashboard />} />
-              <Route path="/patient/visit" element={<VisitRegistration />} />
-              <Route path="/patient/records" element={<MedicalRecords />} />
-              <Route path="/patient/queue" element={<MyQueue />} />
-              <Route path="/patient/notifications" element={<Notifications />} />
-            </Route>
+              {/* Patient Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['pasien']} />}>
+                <Route path="/patient" element={<PatientDashboard />} />
+                <Route path="/patient/visit" element={<VisitRegistration />} />
+                <Route path="/patient/records" element={<MedicalRecords />} />
+                <Route path="/patient/queue" element={<MyQueue />} />
+                <Route path="/patient/notifications" element={<Notifications />} />
+              </Route>
 
-            {/* Bidan Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['bidan']} />}>
-              <Route path="/bidan" element={<BidanDashboard />} />
-              <Route path="/bidan/queue" element={<QueueManagement />} />
-              <Route path="/bidan/examine" element={<ExaminationForm />} />
-              <Route path="/bidan/schedule" element={<ControlSchedule />} />
-              <Route path="/bidan/monitor" element={<VisitMonitor />} />
-              <Route path="/bidan/patients" element={<PatientData />} />
-              <Route path="/bidan/inventory" element={<MedicineInventory />} />
-            </Route>
+              {/* Bidan Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['bidan']} />}>
+                <Route path="/bidan" element={<BidanDashboard />} />
+                <Route path="/bidan/queue" element={<QueueManagement />} />
+                <Route path="/bidan/examine" element={<ExaminationForm />} />
+                <Route path="/bidan/schedule" element={<ControlSchedule />} />
+                <Route path="/bidan/monitor" element={<VisitMonitor />} />
+                <Route path="/bidan/patients" element={<PatientData />} />
+                <Route path="/bidan/inventory" element={<MedicineInventory />} />
+                <Route path="/bidan/notifications" element={<BidanNotifications />} />
+              </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </AlertProvider>
     </AuthProvider>
   );
 }

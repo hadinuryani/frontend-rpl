@@ -5,11 +5,13 @@ import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
 import { IconArrowLeft, IconCheckCircle, IconCalendar, IconFileText } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 import api from '../../services/api';
 import './PatientPages.css';
 
 export default function VisitRegistration() {
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const [isClinicOpen, setIsClinicOpen] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   
@@ -48,7 +50,7 @@ export default function VisitRegistration() {
       setQueueNumber(res.data?.no_antrian || 'Menunggu');
       setSubmitted(true);
     } catch (err) {
-      alert(err.message || 'Gagal mendaftar antrian. Pastikan jadwal tidak penuh atau coba lagi.');
+      await showAlert(err.message || 'Gagal mendaftar antrian. Pastikan jadwal tidak penuh atau coba lagi.', { variant: 'error', title: 'Gagal' });
     } finally {
       setIsSubmitting(false);
     }

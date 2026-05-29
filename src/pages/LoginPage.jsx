@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { IconLock, IconEye, IconEyeOff, IconLeaf, IconAlertTriangle, IconMessageCircle, IconKey } from '../components/Icons';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 import api from '../services/api';
 import BidanAvatar from '../components/BidanAvatar';
 import './AuthPages.css';
@@ -50,6 +51,7 @@ export default function LoginPage() {
   }, []);
   
   const { login, user } = useAuth();
+  const { showAlert } = useAlert();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -93,7 +95,7 @@ export default function LoginPage() {
     setErrors({});
     try {
       await api.post('/auth/forgot-password', { no_wa: otpNoWa });
-      alert('Kode OTP berhasil dikirim ke nomor WhatsApp Anda!');
+      await showAlert('Kode OTP berhasil dikirim ke nomor WhatsApp Anda!', { variant: 'success', title: 'Sukses' });
       setView('reset');
     } catch (err) {
       setErrors({ general: err.message || 'Gagal mengirim OTP. Pastikan nomor WhatsApp terdaftar.' });
@@ -118,7 +120,7 @@ export default function LoginPage() {
         otp_code: otpCode,
         new_password: newPassword
       });
-      alert('Password Anda berhasil diubah! Silakan login kembali.');
+      await showAlert('Password Anda berhasil diubah! Silakan login kembali.', { variant: 'success', title: 'Sukses' });
       setView('login');
       setOtpCode('');
       setNewPassword('');

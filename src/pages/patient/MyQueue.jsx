@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
+import LoadingAnimation from '../../components/LoadingAnimation';
 import { IconArrowLeft, IconQueue, IconCalendar, IconRefresh } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -75,9 +76,7 @@ export default function MyQueue() {
           </div>
 
           {isLoading ? (
-            <div className="empty-state">
-              <div className="empty-title">Memuat data antrian...</div>
-            </div>
+            <LoadingAnimation />
           ) : filtered.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon"><IconQueue size={64} color="var(--color-text-muted)"/></div>

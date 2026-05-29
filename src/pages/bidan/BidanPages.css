@@ -210,3 +210,533 @@
   }
 }
 
+/* Dashboard Redesign (Charts & Alerts) Styles */
+.dashboard-grid-charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-7);
+}
+
+.dashboard-grid-alerts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-7);
+}
+
+.chart-card {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  height: 380px;
+}
+
+.chart-card h4 {
+  font-family: var(--font-heading);
+  color: var(--color-dark);
+  font-size: 1.125rem;
+  margin-bottom: var(--space-4);
+  font-weight: 700;
+}
+
+.chart-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0; /* Important for flex child in Recharts */
+}
+
+.alert-section-card {
+  padding: var(--space-6);
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-section-card h4 {
+  font-family: var(--font-heading);
+  color: var(--color-dark);
+  font-size: 1.125rem;
+  margin-bottom: var(--space-4);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex: 1;
+  overflow-y: auto;
+  max-height: 220px;
+  padding-right: 4px;
+}
+
+/* Custom Scrollbar for Alert List */
+.alert-list::-webkit-scrollbar {
+  width: 4px;
+}
+.alert-list::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+.alert-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--color-primary);
+  font-size: 0.875rem;
+  transition: transform var(--transition-fast);
+}
+
+.alert-item:hover {
+  transform: translateX(4px);
+}
+
+.alert-item.danger {
+  border-left-color: var(--color-error);
+  background: rgba(224, 92, 92, 0.05);
+}
+
+.alert-item.warning {
+  border-left-color: var(--color-warning);
+  background: rgba(233, 196, 106, 0.08);
+}
+
+.alert-item.info {
+  border-left-color: var(--color-primary);
+  background: var(--color-bg);
+}
+
+.alert-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  padding-right: var(--space-3);
+}
+
+.alert-item-title {
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.alert-item-desc {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+}
+
+.alert-item-action {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alert-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-text-muted);
+  gap: var(--space-2);
+  height: 150px;
+  font-size: 0.875rem;
+}
+
+.card-footer-link {
+  margin-top: auto;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  transition: color var(--transition-fast);
+}
+
+.card-footer-link:hover {
+  color: var(--color-primary);
+}
+
+/* Responsivitas Mobile */
+@media (max-width: 1024px) {
+  .dashboard-grid-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid-alerts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2-Column Dashboard Layout */
+.dashboard-container-2col {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.dashboard-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.dashboard-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: sticky;
+  top: calc(var(--navbar-height) + var(--space-5));
+}
+
+/* Redesigned Clinic Toggle Banner */
+.clinic-toggle-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-5);
+  backdrop-filter: var(--glass-blur);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.clinic-toggle-banner:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
+}
+
+.clinic-banner-greeting h3 {
+  font-family: var(--font-heading);
+  color: var(--color-dark);
+  font-size: 1.375rem;
+  margin-bottom: 4px;
+}
+
+.clinic-banner-greeting p {
+  color: var(--color-text-light);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.clinic-banner-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+
+/* Stat Cards in left column */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+/* Chart sizes */
+.main-chart-card {
+  padding: var(--space-6);
+  height: 340px;
+}
+
+.side-chart-card {
+  padding: var(--space-6);
+  height: 300px;
+}
+
+.side-alert-card {
+  padding: var(--space-6);
+  min-height: 300px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 1024px) {
+  .dashboard-container-2col {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-side-col {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .clinic-toggle-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+  .clinic-banner-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Premium Chart Spacing, Tooltips & Legend Layout Refinement
+   ============================================================ */
+.bar-chart-wrapper {
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.custom-chart-tooltip {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px rgba(64, 145, 108, 0.08);
+  border-left: 3px solid var(--color-primary);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0 0 4px 0;
+  font-size: 0.75rem;
+}
+
+.tooltip-value {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: inline-block;
+}
+
+/* Donut Legend Styling */
+.donut-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--space-4);
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--color-text);
+  gap: var(--space-2);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.legend-label {
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-value {
+  font-weight: 700;
+  color: var(--color-dark);
+  background: var(--color-primary-light);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Center Donut Label animation */
+.donut-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================================
+   Luxury Stat Cards (Pasien Hari Ini, Antrian Menunggu, Selesai)
+   ============================================================ */
+.luxury-stat-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(200, 230, 214, 0.35);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.luxury-stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  border-color: rgba(64, 145, 108, 0.3);
+}
+
+.luxury-stat-card:hover::before {
+  transform: translateX(100%);
+}
+
+/* Accent Lines on Left Border */
+.luxury-stat-card.stat-pasien {
+  border-left: 4px solid var(--color-primary);
+}
+.luxury-stat-card.stat-menunggu {
+  border-left: 4px solid var(--color-warning);
+}
+.luxury-stat-card.stat-selesai {
+  border-left: 4px solid var(--color-primary-dark);
+}
+
+/* Icon Container */
+.luxury-stat-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.luxury-stat-card:hover .luxury-stat-icon-wrapper {
+  transform: scale(1.1) rotate(6deg);
+}
+
+/* Color-coded Icon Themes */
+.stat-pasien .luxury-stat-icon-wrapper {
+  background: linear-gradient(135deg, rgba(64, 145, 108, 0.15) 0%, rgba(64, 145, 108, 0.04) 100%);
+  color: var(--color-primary);
+  border: 1px solid rgba(64, 145, 108, 0.2);
+}
+
+.stat-menunggu .luxury-stat-icon-wrapper {
+  background: linear-gradient(135deg, rgba(233, 196, 106, 0.18) 0%, rgba(233, 196, 106, 0.04) 100%);
+  color: #c9a032; /* Richer golden color for premium feel */
+  border: 1px solid rgba(233, 196, 106, 0.25);
+}
+
+.stat-selesai .luxury-stat-icon-wrapper {
+  background: linear-gradient(135deg, rgba(45, 106, 79, 0.15) 0%, rgba(45, 106, 79, 0.04) 100%);
+  color: var(--color-primary-dark);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+/* Value & Label Typography */
+.luxury-stat-value {
+  font-family: var(--font-body) !important;
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.luxury-stat-label {
+  font-family: var(--font-body);
+  font-size: 0.725rem;
+  color: var(--color-text-light);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+
+/* Pregnancy Form Animations and Custom Styles */
+.pregnancy-toggle-container {
+  animation: slideDownFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pregnancy-fade-in {
+  animation: slideDownFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+

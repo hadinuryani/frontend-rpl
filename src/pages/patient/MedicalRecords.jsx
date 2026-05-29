@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
-import { IconArrowLeft, IconSearch, IconFolder, IconClipboard, IconPill, IconX } from '../../components/Icons';
+import LoadingAnimation from '../../components/LoadingAnimation';
+import { IconArrowLeft, IconArrowRight, IconSearch, IconFolder, IconClipboard, IconPill, IconX } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './PatientPages.css';
@@ -17,12 +18,22 @@ export default function MedicalRecords() {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const fetchRecords = async () => {
+      setIsLoading(true);
       try {
-        const res = await api.get('/pasien/rekam-medis');
+        const res = await api.get(`/pasien/rekam-medis?page=${currentPage}&limit=5`);
         setRecords(res.data || []);
+        if (res.meta) {
+          setTotalPages(res.meta.total_pages || 1);
+        }
       } catch (err) {
         console.error("Gagal mengambil data rekam medis:", err);
       } finally {
@@ -30,7 +41,7 @@ export default function MedicalRecords() {
       }
     };
     fetchRecords();
-  }, []);
+  }, [currentPage]);
 
   const filtered = records.filter(r => {
     const dateStr = new Date(r.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
@@ -75,7 +86,7 @@ export default function MedicalRecords() {
           </div>
 
           {isLoading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>Memuat data...</div>
+            <LoadingAnimation />
           ) : activeTab === 'resep' ? (
             (() => {
               const recordsWithResep = filtered.filter(r => r.resep && r.resep.length > 0);
@@ -144,6 +155,30 @@ export default function MedicalRecords() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {!isLoading && totalPages > 1 && (
+            <div className="pagination-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+              <button 
+                className="btn btn-secondary btn-sm btn-icon" 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                title="Halaman Sebelumnya"
+              >
+                <IconArrowLeft size={16} />
+              </button>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text-light)' }}>
+                Halaman {currentPage} dari {totalPages}
+              </span>
+              <button 
+                className="btn btn-secondary btn-sm btn-icon" 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                title="Halaman Selanjutnya"
+              >
+                <IconArrowRight size={16} />
+              </button>
             </div>
           )}
         </div>

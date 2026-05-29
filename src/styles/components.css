@@ -458,6 +458,109 @@
   background: var(--color-error);
 }
 
+/* Animated Clinic Status Pill (Global) */
+.clinic-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 1;
+}
+
+.clinic-status-pill::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  z-index: 0;
+  transition: all var(--transition-base);
+}
+
+.clinic-status-pill.status-open::before {
+  background: #EAF7F2;
+  border: 1px solid rgba(64, 145, 108, 0.2);
+  box-shadow: 0 4px 12px rgba(64, 145, 108, 0.08);
+}
+
+.clinic-status-pill.status-closed::before {
+  background: #FDF2F2;
+  border: 1px solid rgba(224, 92, 92, 0.2);
+  box-shadow: 0 4px 12px rgba(224, 92, 92, 0.08);
+}
+
+.clinic-status-pill > span {
+  position: relative;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+}
+
+.clinic-status-pill.status-open {
+  color: #2D6A4F;
+}
+
+.clinic-status-pill.status-closed {
+  color: #C94545;
+}
+
+/* Rotating Border Logic */
+.clinic-status-pill .dots-border {
+  --size_border: calc(100% + 3px);
+  overflow: hidden;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size_border);
+  height: var(--size_border);
+  background-color: transparent;
+  border-radius: var(--radius-pill);
+  z-index: -10;
+}
+
+.clinic-status-pill .dots-border::before {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: left;
+  transform: rotate(0deg);
+  width: 100%;
+  height: 2.2rem;
+  mask: linear-gradient(transparent 0%, white 120%);
+  -webkit-mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate-border 2.5s linear infinite;
+}
+
+.clinic-status-pill.status-open .dots-border::before {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+}
+
+.clinic-status-pill.status-closed .dots-border::before {
+  background: linear-gradient(90deg, var(--color-error) 0%, #FF8A8A 100%);
+}
+
+@keyframes rotate-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 /* ── TABLES ── */
 .data-table {
   width: 100%;
@@ -987,3 +1090,278 @@
   background: rgba(224, 92, 92, 0.1);
   color: #C94545;
 }
+
+/* ── CUSTOM ALERT/CONFIRM DIALOGS ── */
+.alert-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 61, 46, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn var(--transition-fast) ease;
+  padding: var(--space-4);
+}
+
+.alert-dialog-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: scaleIn var(--transition-spring) forwards;
+}
+
+.alert-dialog-body {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.alert-dialog-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.alert-success-icon {
+  background: rgba(64, 145, 108, 0.15);
+  color: var(--color-success);
+}
+
+.alert-error-icon {
+  background: rgba(224, 92, 92, 0.15);
+  color: var(--color-error);
+}
+
+.alert-warning-icon {
+  background: rgba(233, 196, 106, 0.25);
+  color: #B5943A;
+}
+
+.alert-info-icon {
+  background: rgba(64, 145, 108, 0.1);
+  color: var(--color-primary);
+}
+
+.alert-dialog-content {
+  flex: 1;
+}
+
+.alert-dialog-content h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--color-dark);
+  margin-bottom: 6px;
+}
+
+.alert-dialog-content p {
+  font-size: 0.9375rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.alert-dialog-footer {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.alert-btn-confirm {
+  min-width: 90px;
+}
+
+.alert-btn-cancel {
+  min-width: 90px;
+}
+
+/* ── UIVERSE HOURGLASS LOADING ANIMATION (THEMED) ── */
+.loader {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 50px;
+  height: 80px;
+  border-top: 5px solid var(--color-primary-dark);
+  border-bottom: 5px solid var(--color-primary-dark);
+  position: relative;
+  background: linear-gradient(var(--color-primary) 30px, transparent 0) no-repeat;
+  background-size: 2px 40px;
+  background-position: 50% 0px;
+  animation: spinx 5s linear infinite;
+}
+
+.loader:before, .loader:after {
+  content: "";
+  width: 40px;
+  left: 50%;
+  height: 35px;
+  position: absolute;
+  top: 0;
+  transform: translatex(-50%);
+  background: rgba(64, 145, 108, 0.12);
+  border-radius: 0 0 20px 20px;
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-position: 0 0px;
+  animation: lqt 5s linear infinite;
+}
+
+.loader:after {
+  top: auto;
+  bottom: 0;
+  border-radius: 20px 20px 0 0;
+  animation: lqb 5s linear infinite;
+}
+
+@keyframes lqt {
+  0%, 100% {
+    background-image: linear-gradient(var(--color-primary) 40px, transparent 0);
+    background-position: 0% 0px;
+  }
+
+  50% {
+    background-image: linear-gradient(var(--color-primary) 40px, transparent 0);
+    background-position: 0% 40px;
+  }
+
+  50.1% {
+    background-image: linear-gradient(var(--color-primary) 40px, transparent 0);
+    background-position: 0% -40px;
+  }
+}
+
+@keyframes lqb {
+  0% {
+    background-image: linear-gradient(var(--color-primary) 40px, transparent 0);
+    background-position: 0 40px;
+  }
+
+  100% {
+    background-image: linear-gradient(var(--color-primary) 40px, transparent 0);
+    background-position: 0 -40px;
+  }
+}
+
+@keyframes spinx {
+  0%, 49% {
+    transform: rotate(0deg);
+    background-position: 50% 36px;
+  }
+
+  51%, 98% {
+    transform: rotate(180deg);
+    background-position: 50% 4px;
+  }
+
+  100% {
+    transform: rotate(360deg);
+    background-position: 50% 36px;
+  }
+}
+
+/* ── CIRCULAR THEMED ACTION BUTTONS ── */
+.btn-action-edit,
+.btn-action-delete,
+.btn-action-record {
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+  font-size: 0 !important;
+}
+
+/* Edit – green theme */
+.btn-action-edit {
+  background: linear-gradient(135deg, rgba(64,145,108,0.12), rgba(45,106,79,0.08)) !important;
+  color: var(--color-primary-dark) !important;
+  box-shadow: 0 2px 6px rgba(64,145,108,0.10) !important;
+}
+.btn-action-edit:hover {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  color: white !important;
+  transform: translateY(-2px) scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(64,145,108,0.30) !important;
+}
+.btn-action-edit:active {
+  transform: translateY(0) scale(0.95) !important;
+  box-shadow: 0 2px 6px rgba(64,145,108,0.20) !important;
+}
+
+/* Delete – red theme */
+.btn-action-delete {
+  background: linear-gradient(135deg, rgba(224,92,92,0.12), rgba(192,57,57,0.08)) !important;
+  color: var(--color-error) !important;
+  box-shadow: 0 2px 6px rgba(224,92,92,0.10) !important;
+}
+.btn-action-delete:hover {
+  background: linear-gradient(135deg, var(--color-error), #c03939) !important;
+  color: white !important;
+  transform: translateY(-2px) scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(224,92,92,0.30) !important;
+}
+.btn-action-delete:active {
+  transform: translateY(0) scale(0.95) !important;
+  box-shadow: 0 2px 6px rgba(224,92,92,0.20) !important;
+}
+
+/* Record / Clipboard – gold theme */
+.btn-action-record {
+  background: linear-gradient(135deg, rgba(181,148,58,0.14), rgba(160,125,40,0.08)) !important;
+  color: var(--color-accent) !important;
+  box-shadow: 0 2px 6px rgba(181,148,58,0.10) !important;
+}
+.btn-action-record:hover {
+  background: linear-gradient(135deg, var(--color-accent), #a07d28) !important;
+  color: white !important;
+  transform: translateY(-2px) scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(181,148,58,0.30) !important;
+}
+.btn-action-record:active {
+  transform: translateY(0) scale(0.95) !important;
+  box-shadow: 0 2px 6px rgba(181,148,58,0.20) !important;
+}
+
+/* ── Mobile action button group ── */
+.action-btn-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Bigger touch targets on mobile */
+@media (max-width: 768px) {
+  .btn-action-edit,
+  .btn-action-delete,
+  .btn-action-record {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+}
+
+

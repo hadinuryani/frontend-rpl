@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
+import LoadingAnimation from '../../components/LoadingAnimation';
 import { IconClipboard, IconFolder, IconPill, IconBell, IconCalendar, IconCheckCircle, IconArrowRight, IconUser, IconSettings } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -23,6 +24,7 @@ export default function PatientDashboard() {
   const [klinikStatus, setKlinikStatus] = useState(null);
   const [jadwalKontrol, setJadwalKontrol] = useState([]);
   const [rekamMedis, setRekamMedis] = useState([]);
+  const [notifikasi, setNotifikasi] = useState([]);
   
   const [profileData, setProfileData] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -32,10 +34,12 @@ export default function PatientDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusRes, jadwalRes, rmRes] = await Promise.all([
+        const [statusRes, jadwalRes, rmRes, profileRes, notifRes] = await Promise.all([
           api.get('/klinik/status'),
           api.get('/pasien/jadwal-kontrol'),
-          api.get('/pasien/rekam-medis?limit=3')
+          api.get('/pasien/rekam-medis?limit=3'),
+          api.get('/pasien/profile'),
+          api.get('/pasien/notifikasi?limit=100')
         ]);
         setKlinikStatus(statusRes.data);
         
@@ -46,29 +50,14 @@ export default function PatientDashboard() {
         setJadwalKontrol(upcoming);
 
         setRekamMedis(rmRes.data || []);
+        setProfileData(profileRes.data);
+        setNotifikasi(notifRes.data || []);
       } catch (err) {
         console.error("Gagal mengambil data dashboard pasien:", err);
       }
     };
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (activeTab === 'profile') {
-      const fetchProfile = async () => {
-        setIsLoadingProfile(true);
-        try {
-          const res = await api.get('/pasien/profile');
-          setProfileData(res.data);
-        } catch (err) {
-          console.error("Gagal mengambil data profil:", err);
-        } finally {
-          setIsLoadingProfile(false);
-        }
-      };
-      fetchProfile();
-    }
-  }, [activeTab]);
 
   const nextJadwal = jadwalKontrol.length > 0 ? jadwalKontrol[0] : null;
 
@@ -90,7 +79,7 @@ export default function PatientDashboard() {
                 </div>
               </div>
               {isLoadingProfile ? (
-                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Memuat data profil...</div>
+                <LoadingAnimation />
               ) : profileData ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(26,178,149,0.03)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(26,178,149,0.06)' }}>
@@ -131,61 +120,251 @@ export default function PatientDashboard() {
             </div>
           ) : (
             <>
-              <div className="greeting-banner animate-fade-in">
+              <div className={`greeting-banner animate-fade-in ${klinikStatus && klinikStatus.status !== 'buka' ? 'clinic-closed' : ''}`}>
                 <div>
-                  <h2>Selamat Datang, {user?.profile?.nama_lengkap || "Sari Indah"}</h2>
+                  <h2>Selamat Datang, {profileData?.nama_lengkap || user?.profile?.nama_lengkap || "Pasien"}</h2>
                   {klinikStatus && (
-                    <div className="clinic-status-pill" style={{ background: klinikStatus.status === 'buka' ? 'rgba(255,255,255,0.2)' : 'rgba(200,50,50,0.5)', color: 'white', display: 'inline-flex', marginTop: '8px' }}>
-                      <span className="pulse-dot" style={{ background: klinikStatus.status === 'buka' ? 'white' : '#ffcccc' }}></span>
-                      {klinikStatus.status === 'buka' ? 'Klinik Sedang Buka' : 'Klinik Sedang Tutup'}
+                    <div className={`clinic-status-pill ${klinikStatus.status === 'buka' ? 'status-open' : 'status-closed'}`} style={{ marginTop: '8px' }}>
+                      <div className="dots-border"></div>
+                      <span className={`pulse-dot ${klinikStatus.status === 'buka' ? '' : 'red'}`} style={{ marginRight: '8px' }}></span>
+                      <span>
+                        {klinikStatus.status === 'buka' ? 'Klinik Sedang Buka' : 'Klinik Sedang Tutup'}
+                      </span>
                     </div>
                   )}
                 </div>
                 <div className="greeting-date">{today}</div>
               </div>
 
-              <div className="grid-4 stagger-children" style={{ marginBottom: 'var(--space-7)' }}>
-                {quickActions.map((a, i) => (
-                  <Link to={a.path} className="action-card" key={i}>
-                    <div className="action-icon"><span>{a.icon}</span></div>
-                    <div className="action-title">{a.title}</div>
-                    <div className="action-desc">{a.desc}</div>
-                  </Link>
-                ))}
-              </div>
+              {/* 2-Column Dashboard Layout */}
+              <div className="dashboard-container-2col animate-fade-in">
+                {/* Left Column (Main / Operasional) */}
+                <div className="dashboard-main-col">
+                  {/* Stats Cards (3 Columns) */}
+                  <div className="dashboard-stats-grid">
+                    <div className="luxury-stat-card stat-pasien">
+                      <div className="luxury-stat-icon-wrapper">
+                        <IconFolder size={22} />
+                      </div>
+                      <div>
+                        <div className="luxury-stat-value">{rekamMedis.length}</div>
+                        <div className="luxury-stat-label">Total Kunjungan</div>
+                      </div>
+                    </div>
+                    
+                    <div className="luxury-stat-card stat-menunggu">
+                      <div className="luxury-stat-icon-wrapper">
+                        <IconCalendar size={22} />
+                      </div>
+                      <div>
+                        <div className="luxury-stat-value">
+                          {nextJadwal ? "1" : "0"}
+                        </div>
+                        <div className="luxury-stat-label">Jadwal Kontrol</div>
+                      </div>
+                    </div>
 
-              <div className="info-card" style={{ marginBottom: 'var(--space-7)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifycontent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                  <div>
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCalendar size={16}/> Jadwal Kontrol Berikutnya</div>
-                    <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-dark)' }}>
-                      {nextJadwal ? new Date(nextJadwal.tanggal_kontrol).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Tidak ada jadwal kontrol terdekat'}
+                    <div className="luxury-stat-card stat-selesai">
+                      <div className="luxury-stat-icon-wrapper">
+                        <IconBell size={22} />
+                      </div>
+                      <div>
+                        <div className="luxury-stat-value">
+                          {notifikasi.filter(n => !n.is_read).length}
+                        </div>
+                        <div className="luxury-stat-label">Notifikasi Baru</div>
+                      </div>
                     </div>
                   </div>
-                  {nextJadwal && (
-                    <span className="badge badge-success badge-lg"><IconCheckCircle size={14}/> H-1 Pengingat Aktif</span>
+
+                  {/* Quick Actions (2x2 Grid) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>
+                    {quickActions.map((a, i) => (
+                      <Link to={a.path} className="action-card-redesigned" key={i}>
+                        <div className="action-icon-wrapper">
+                          {a.icon}
+                        </div>
+                        <div className="action-card-text">
+                          <div className="action-card-title">{a.title}</div>
+                          <div className="action-card-desc">{a.desc}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Control Schedule Banner */}
+                  <div className="info-card-container">
+                    <div className="info-card-inner">
+                      <div>
+                        <div className="info-card-label"><IconCalendar size={16}/> Jadwal Kontrol Berikutnya</div>
+                        <div className="info-card-value">
+                          {nextJadwal ? new Date(nextJadwal.tanggal_kontrol).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Tidak ada jadwal kontrol terdekat'}
+                        </div>
+                        {nextJadwal?.catatan && (
+                          <div className="info-card-note">Keperluan: {nextJadwal.catatan}</div>
+                        )}
+                      </div>
+                      {nextJadwal && (
+                        <span className="badge badge-success badge-lg"><IconCheckCircle size={14}/> Pengingat Aktif</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Kunjungan Terakhir */}
+                  <div>
+                    <div className="section-header-redesigned">
+                      <h3>Kunjungan Terakhir</h3>
+                      <Link to="/patient/records" className="view-all">Lihat Semua <IconArrowRight size={16}/></Link>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                      {rekamMedis.length === 0 ? (
+                        <div className="glass-card" style={{ padding: 'var(--space-5)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                          Belum ada riwayat kunjungan.
+                        </div>
+                      ) : rekamMedis.map((rm) => (
+                        <div className="glass-card last-visit-item" key={rm.id}>
+                          <div>
+                            <div className="visit-date">{new Date(rm.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</div>
+                            <div className="visit-complaint">{rm.keluhan_utama}</div>
+                          </div>
+                          <span className="badge badge-success">Selesai</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column (Sidebar / Dynamic Health Details) */}
+                <div className="dashboard-side-col">
+                  {rekamMedis.length > 0 ? (
+                    (() => {
+                      const rm = rekamMedis[0]; // Latest medical record
+                      
+                      // Calculate blood pressure status dynamically
+                      let bpStatus = { text: 'Normal', color: 'var(--color-primary)' };
+                      if (rm.tekanan_darah) {
+                        const parts = rm.tekanan_darah.split('/');
+                        if (parts.length === 2) {
+                          const systol = parseInt(parts[0]);
+                          const diastol = parseInt(parts[1]);
+                          if (systol >= 140 || diastol >= 90) {
+                            bpStatus = { text: 'Tinggi', color: 'var(--color-error)' };
+                          } else if (systol >= 120 || diastol >= 80) {
+                            bpStatus = { text: 'Pre-Hipertensi', color: 'var(--color-warning)' };
+                          }
+                        }
+                      }
+
+                      return (
+                        <div className="glass-card patient-side-card health-summary-card">
+                          <h4 className="side-card-title">
+                            <span className="side-card-icon"><IconClipboard size={18} color="var(--color-primary)" /></span>
+                            Kondisi Medis Terakhir
+                          </h4>
+                          <div className="visit-date-badge">Pemeriksaan: {new Date(rm.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                          
+                          <div className="medical-vitals-grid">
+                            <div className="vital-metric-item">
+                              <span className="vital-label">Tekanan Darah</span>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
+                                <span className="vital-value">{rm.tekanan_darah || '-'}</span>
+                                <span className="vital-unit">mmHg</span>
+                              </div>
+                              {rm.tekanan_darah && (
+                                <div style={{ marginTop: '6px' }}>
+                                  <span className="vital-badge-inline" style={{ backgroundColor: `${bpStatus.color}15`, color: bpStatus.color }}>
+                                    {bpStatus.text}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="vital-metric-item">
+                              <span className="vital-label">Berat Badan</span>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                <span className="vital-value">{rm.berat_badan ? `${rm.berat_badan}` : '-'}</span>
+                                <span className="vital-unit">kg</span>
+                              </div>
+                            </div>
+
+                            {profileData?.jenis_kelamin === 'perempuan' && profileData?.is_hamil && rm.tinggi_fundus_uteri && (
+                              <div className="vital-metric-item pregnancy-theme-border">
+                                <span className="vital-label">Tinggi Fundus</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                  <span className="vital-value">{rm.tinggi_fundus_uteri}</span>
+                                  <span className="vital-unit">cm</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {profileData?.jenis_kelamin === 'perempuan' && profileData?.is_hamil && rm.kondisi_janin && (
+                            <div className="vital-full-width-box pregnancy-theme-bg">
+                              <span className="vital-box-label">Kondisi Janin</span>
+                              <p className="vital-box-text">{rm.kondisi_janin}</p>
+                            </div>
+                          )}
+
+                          {rm.catatan_tambahan && (
+                            <div className="vital-full-width-box">
+                              <span className="vital-box-label">Catatan Bidan</span>
+                              <p className="vital-box-text">{rm.catatan_tambahan}</p>
+                            </div>
+                          )}
+
+                          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+                            <Link to="/patient/records" className="btn btn-ghost btn-sm" style={{ width: '100%', fontSize: '0.8125rem' }}>
+                              Lihat Riwayat Lengkap <IconArrowRight size={14} />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    /* If no medical records: display patient demographic health profile card */
+                    <div className="glass-card patient-side-card health-profile-card">
+                      <h4 className="side-card-title">
+                        <span className="side-card-icon"><IconUser size={18} color="var(--color-primary)" /></span>
+                        Profil Kesehatan
+                      </h4>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+                        Berikut adalah rangkuman data klinis terdaftar Anda di sistem Indah Care Plus.
+                      </p>
+                      
+                      <div className="profile-details-grid">
+                        <div className="profile-detail-item">
+                          <span className="detail-label">Golongan Darah</span>
+                          <span className="detail-value">{profileData?.golongan_darah || 'Tidak Tahu'}</span>
+                        </div>
+                        <div className="profile-detail-item">
+                          <span className="detail-label">Usia</span>
+                          <span className="detail-value">{profileData?.umur ? `${profileData.umur} Tahun` : '-'}</span>
+                        </div>
+                        <div className="profile-detail-item">
+                          <span className="detail-label">Gender</span>
+                          <span className="detail-value" style={{ textTransform: 'capitalize' }}>{profileData?.jenis_kelamin || '-'}</span>
+                        </div>
+                        <div className="profile-detail-item">
+                          <span className="detail-label">Status Kehamilan</span>
+                          <span className="detail-value">
+                            {profileData?.jenis_kelamin === 'perempuan' && profileData?.is_hamil ? 'Hamil' : 'Tidak Hamil'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="no-records-alert-box">
+                        <p style={{ margin: 0, fontWeight: 600 }}>Belum Ada Catatan Pemeriksaan</p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', opacity: 0.85 }}>
+                          Lakukan pendaftaran antrian untuk melakukan pemeriksaan pertama dengan Bidan.
+                        </p>
+                        <Link to="/patient/visit" className="btn btn-secondary btn-sm" style={{ marginTop: '12px', width: '100%', border: 'none', background: 'white', color: 'var(--color-primary-dark)', fontWeight: 700 }}>
+                          Daftar Kunjungan Baru
+                        </Link>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-
-              <div className="section-title">
-                <h3>Kunjungan Terakhir</h3>
-                <Link to="/patient/records" className="view-all">Lihat Semua <IconArrowRight size={16}/></Link>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                {rekamMedis.length === 0 ? (
-                  <div className="glass-card" style={{ padding: 'var(--space-5)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                    Belum ada riwayat kunjungan.
-                  </div>
-                ) : rekamMedis.map((rm) => (
-                  <div className="glass-card" key={rm.id} style={{ padding: 'var(--space-5)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--color-dark)', marginBottom: '4px' }}>{new Date(rm.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--color-text-light)' }}>{rm.keluhan_utama}</div>
-                    </div>
-                    <span className="badge badge-success">Selesai</span>
-                  </div>
-                ))}
               </div>
             </>
           )}

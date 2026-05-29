@@ -118,3 +118,6 @@ export const IconMenuFold = (p) => <I {...p}><line x1="4" y1="6" x2="20" y2="6"/
 
 export const IconMenuUnfold = (p) => <I {...p}><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/><polyline points="12 8 16 12 12 16"/></I>;
 
+export const IconInfo = (p) => <I {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></I>;
+
+

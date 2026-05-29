@@ -81,41 +81,11 @@ export default function Navbar({ variant = 'public', userName = '' }) {
 
     const checkNotifications = async () => {
       try {
-        const res = await api.get('/pasien/jadwal-kontrol');
-        const jadwals = res.data || [];
-        const readKeys = JSON.parse(localStorage.getItem('read_notif_keys') || '[]');
-
-        // Check welcome notif
-        const welcomeKey = 'welcome-notif';
-        if (!readKeys.includes(welcomeKey)) {
-          setHasUnread(true);
-          return;
-        }
-
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        for (const j of jadwals) {
-          const tgl = new Date(j.tanggal_kontrol);
-          const diffTime = tgl - today;
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
-          if (diffDays >= 0 && diffDays <= 3) {
-             const key = `schedule-warning-${j.id}-${j.tanggal_kontrol}`;
-             if (!readKeys.includes(key)) {
-               setHasUnread(true);
-               return;
-             }
-          } else if (diffDays > 3) {
-             const key = `schedule-set-${j.id}-${j.tanggal_kontrol}`;
-             if (!readKeys.includes(key)) {
-               setHasUnread(true);
-               return;
-             }
-          }
-        }
-
-        setHasUnread(false);
+        // Check unread notifications from backend
+        const res = await api.get('/pasien/notifikasi?limit=50');
+        const notifs = res.data || [];
+        const hasUnreadNotif = notifs.some(n => !n.is_read);
+        setHasUnread(hasUnreadNotif);
       } catch (err) {
         console.error("Gagal memeriksa notifikasi:", err);
       }
@@ -123,13 +93,37 @@ export default function Navbar({ variant = 'public', userName = '' }) {
 
     checkNotifications();
     
-    const handleStorageChange = () => checkNotifications();
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('notifRead', handleStorageChange);
+    // Re-check when a notification is marked as read from the Notifications page
+    const handleNotifRead = () => checkNotifications();
+    window.addEventListener('notifRead', handleNotifRead);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('notifRead', handleStorageChange);
+      window.removeEventListener('notifRead', handleNotifRead);
+    };
+  }, [variant]);
+
+  useEffect(() => {
+    if (variant !== 'bidan') return;
+
+    const checkBidanNotifications = async () => {
+      try {
+        const res = await api.get('/bidan/notifikasi');
+        const notifs = res.data || [];
+        setHasUnread(notifs.length > 0);
+      } catch (err) {
+        console.error("Gagal memeriksa notifikasi bidan:", err);
+      }
+    };
+
+    checkBidanNotifications();
+
+    const handleNotifRead = () => checkBidanNotifications();
+    window.addEventListener('notifRead', handleNotifRead);
+    window.addEventListener('bidanNotifRead', handleNotifRead);
+
+    return () => {
+      window.removeEventListener('notifRead', handleNotifRead);
+      window.removeEventListener('bidanNotifRead', handleNotifRead);
     };
   }, [variant]);
 
@@ -157,7 +151,7 @@ export default function Navbar({ variant = 'public', userName = '' }) {
     );
   }
 
-  const targetPath = variant === 'bidan' ? '/bidan/control-schedule' : '/patient/notifications';
+  const targetPath = variant === 'bidan' ? '/bidan/notifications' : '/patient/notifications';
 
   return (
     <nav className="navbar navbar-auth" id="dashboard-navbar">
@@ -188,12 +182,13 @@ export default function Navbar({ variant = 'public', userName = '' }) {
           </span>
         </div>
         <div className="navbar-actions">
-          {variant === 'patient' && (
+          {(variant === 'patient' || variant === 'bidan') && (
             <Link to={targetPath} className="navbar-icon-btn" aria-label="Notifikasi" id="navbar-notification-btn">
               <IconBell size={18} />
               {hasUnread && <span className="notif-dot"></span>}
             </Link>
           )}
+
           <div className="navbar-user">
             <div className="navbar-avatar">{userName?.charAt(0) || 'U'}</div>
             <span className="navbar-username hide-mobile">

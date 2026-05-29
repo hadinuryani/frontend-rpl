@@ -20,6 +20,7 @@ const bidanMenu = [
   { icon: <IconChart size={20}/>, label: 'Monitor Kunjungan', path: '/bidan/monitor' },
   { icon: <IconUsers size={20}/>, label: 'Data Pasien', path: '/bidan/patients' },
   { icon: <IconPackage size={20}/>, label: 'Inventori Obat', path: '/bidan/inventory' },
+  { icon: <IconBell size={20}/>, label: 'Notifikasi', path: '/bidan/notifications' },
   { icon: <IconUser size={20}/>, label: 'Profil Saya', path: '/bidan', tab: 'profile' },
 ];
 

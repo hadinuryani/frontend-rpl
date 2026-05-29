@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import BottomNav from '../../components/BottomNav';
+import LoadingAnimation from '../../components/LoadingAnimation';
 import { IconArrowLeft, IconMessageCircle, IconCheckCircle, IconRefresh, IconSettings } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 import api from '../../services/api';
 import './BidanPages.css';
 
 export default function ControlSchedule() {
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const [search, setSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -57,8 +60,8 @@ export default function ControlSchedule() {
   );
 
   const handleSave = async () => {
-    if (!selectedPatient) return alert("Pilih pasien terlebih dahulu");
-    if (!tanggalKontrol) return alert("Tanggal kontrol wajib diisi");
+    if (!selectedPatient) return showAlert("Pilih pasien terlebih dahulu", { variant: 'warning', title: 'Peringatan' });
+    if (!tanggalKontrol) return showAlert("Tanggal kontrol wajib diisi", { variant: 'warning', title: 'Peringatan' });
 
     setIsSubmitting(true);
     try {
@@ -67,21 +70,21 @@ export default function ControlSchedule() {
         tanggal_kontrol: tanggalKontrol,
         catatan: catatan
       });
-      alert('Jadwal kontrol berhasil disimpan!');
+      await showAlert('Jadwal kontrol berhasil disimpan!', { variant: 'success', title: 'Sukses' });
       setSearch('');
       setSelectedPatient(null);
       setTanggalKontrol('');
       setCatatan('');
       fetchData(); // refresh list
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan jadwal');
+      await showAlert(err.message || 'Gagal menyimpan jadwal', { variant: 'error', title: 'Gagal' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleSaveSetting = async () => {
-    if (!waktuPengingat) return alert("Waktu pengingat wajib diisi");
+    if (!waktuPengingat) return showAlert("Waktu pengingat wajib diisi", { variant: 'warning', title: 'Peringatan' });
     setIsSavingSetting(true);
     try {
       await api.put('/bidan/jadwal-kontrol/waktu-pengingat', {
@@ -90,9 +93,9 @@ export default function ControlSchedule() {
         alamat_klinik: alamatKlinik,
         jam_kontrol: jamKontrol
       });
-      alert('Pengaturan WhatsApp berhasil diperbarui!');
+      await showAlert('Pengaturan WhatsApp berhasil diperbarui!', { variant: 'success', title: 'Sukses' });
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan pengaturan');
+      await showAlert(err.message || 'Gagal menyimpan pengaturan', { variant: 'error', title: 'Gagal' });
     } finally {
       setIsSavingSetting(false);
     }
@@ -245,7 +248,7 @@ export default function ControlSchedule() {
                     </tr></thead>
                     <tbody>
                       {isLoading ? (
-                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Memuat data...</td></tr>
+                        <tr><td colSpan="4"><LoadingAnimation /></td></tr>
                       ) : schedules.length === 0 ? (
                         <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>Belum ada jadwal kontrol terdaftar</td></tr>
                       ) : schedules.map((s) => (
@@ -272,7 +275,7 @@ export default function ControlSchedule() {
               </div>
               <div className="hide-desktop" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {isLoading ? (
-                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)' }}>Memuat data...</div>
+                  <LoadingAnimation />
                 ) : schedules.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)' }}>Belum ada jadwal kontrol terdaftar</div>
                 ) : schedules.map((s) => (
