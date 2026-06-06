@@ -126,7 +126,7 @@ export default function LandingPage() {
         VELOCITY_DISSIPATION={5}
         PRESSURE={0.1}
         CURL={3}
-        SPLAT_RADIUS={0.2}
+        SPLAT_RADIUS={0.05}
         SPLAT_FORCE={6000}
         COLOR_UPDATE_SPEED={19}
       />
